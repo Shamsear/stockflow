@@ -1,0 +1,260 @@
+================================================================================
+                         STOCKFLOW - META AD & LAUNCH PLAN
+                         Qatar 🇶🇦 & UAE 🇦🇪 Market Launch
+================================================================================
+
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. Executive Overview & Core Strategy
+2. Meta & Social Media Infrastructure Setup (Steps 1-4)
+3. Meta Poster Ad Creative Strategy & Prompt
+4. Canva / Figma Screenshot Compositing Instructions
+5. Meta Ads Campaign Targeting & Budget Configuration
+6. Next.js Trust Landing Page Architecture & Full Copy
+7. Operational Workflow & Lead Distribution Plan
+8. Launch Execution Checklist
+
+================================================================================
+1. EXECUTIVE OVERVIEW & CORE STRATEGY
+================================================================================
+
+Product Name:   StockFlow
+Target Market:  Warehouse Managers, Logistics Directors, Supply Chain Operators,
+                E-commerce Businesses, and Distributors in Qatar & UAE.
+Primary Goal:   Validate market demand and acquire early client leads via direct 
+                WhatsApp conversations.
+Ad Strategy:    Run Meta Ads (Instagram & Facebook) optimized for Messages (WhatsApp).
+Trust Engine:   A lightweight Next.js 1-page landing page listed in bio/ad info to 
+                establish legitimacy for a brand-new company.
+
+================================================================================
+2. META & SOCIAL MEDIA INFRASTRUCTURE SETUP (STEPS 1-4)
+================================================================================
+
+Order matters. Follow this exact sequence so Meta does not block ad creation:
+
+STEP 1: Create Facebook Business Page
+--------------------------------------------------------------------------------
+- Go to: facebook.com/pages/create
+- Page Name: StockFlow - Warehouse Management System
+- Category: Software Company / Business Service
+- Description: "Customizable warehouse management dashboard for businesses in Qatar & UAE. Manage inbounds, outbounds, and stock effortlessly."
+- Profile Picture: StockFlow clean minimalist logo / icon.
+- Cover Photo: StockFlow dashboard brand banner.
+
+STEP 2: Create Instagram Business Account
+--------------------------------------------------------------------------------
+- Create account handle (e.g., @stockflow.app or @stockflow.wms).
+- Switch to "Professional / Business Account".
+- Link Instagram Account directly to the Facebook Page created in Step 1 (via Settings > Linked Accounts).
+
+STEP 3: Set Up WhatsApp Business Account
+--------------------------------------------------------------------------------
+- Install WhatsApp Business App on the business smartphone:
+  * Official WhatsApp Line: +974 7236 0418 (Serving Qatar & UAE)
+- Set up Business Profile (Business Name: StockFlow WMS, Category: Software Company).
+- Link WhatsApp number in Meta Business Manager / Facebook Page settings under WhatsApp Accounts.
+
+STEP 4: Set Up Meta Business Suite & Ad Account
+--------------------------------------------------------------------------------
+- Go to: business.facebook.com
+- Create / Connect Business Manager account.
+- Add the Facebook Page and Instagram Account.
+- Create an Ad Account under Business Manager.
+- Add Credit/Debit Card payment method.
+- Assign team member permissions.
+
+================================================================================
+3. META POSTER AD CREATIVE STRATEGY & PROMPT
+================================================================================
+
+Why Hybrid Visual Strategy?
+AI generators struggle with UI text, causing garbled dashboard screens. By generating an ultra-professional poster background with an EMPTY angled laptop frame and dropping your real dashboard screenshot inside using Canva/Figma, you achieve a print-quality ad that looks 100% human-designed.
+
+Image Specs: 1080 x 1350 px (4:5 Portrait Ratio - optimal for Instagram/Facebook feeds)
+
+AI IMAGE GENERATOR PROMPT (Midjourney / DALL-E 3 / Flux):
+--------------------------------------------------------------------------------
+Create a professional B2B SaaS advertisement poster background, 1080x1350px (4:5 portrait ratio), for "StockFlow" — a warehouse management dashboard product. Leave a clean open rectangular area on the right side, angled slightly, for a laptop mockup to be composited in afterward — do not render any screen content or UI inside it, just an empty angled laptop/monitor frame outline in a neutral dark gray or black.
+
+LAYOUT & COMPOSITION:
+- Asymmetric grid layout, NOT centered or symmetrical
+- Top-left: small wordmark "StockFlow" in a bold geometric sans-serif (Inter, Söhne, or Aeonik style), dark navy (#0F172A)
+- Below it, small eyebrow text "WAREHOUSE MANAGEMENT, YOUR WAY" in letter-spaced caps, teal (#0F766E), realistic tight tracking, not oversized
+- Large bold headline: "Manage Inbound, Outbound & Stock — Your Way" in the same geometric sans-serif, dark navy, left-aligned, natural line breaks across 3 lines, realistic kerning and consistent baseline
+- Subheadline in a lighter weight, medium gray (#475569): "A fully customizable dashboard, tailored to how you work and built to grow with you."
+- Small badge/chip: "Now Serving Qatar & UAE" — thin border, small text, understated
+- Solid pill-shaped CTA button, teal fill (#0F766E), white bold text "Sign Up Now", subtle realistic shadow (soft, short, not glowing)
+- Below the CTA, a small horizontal contact row with a simple WhatsApp glyph icon followed by:
+  💬 +974 7236 0418  |  Serving Qatar 🇶🇦 & UAE 🇦🇪
+- Empty angled laptop/monitor frame on the right side with a soft realistic drop shadow beneath it
+
+BACKGROUND & STYLE:
+- Solid soft off-white background (#F8FAFC) — NOT a gradient, NOT a glossy or glowing texture
+- One large, flat, rounded rectangle in soft teal or warm cream as a single background accent shape behind part of the layout — flat color only, no gradient fill, no glow, no blur halo
+- Optional: extremely subtle, low-opacity fine line grid texture — barely visible, adds print-like texture rather than "tech gradient" cliché
+- No particle effects, no bokeh, no lens flare, no glossy reflections anywhere
+
+REALISM CUES (AVOID AI LOOK):
+- Flat, matte color fills only — no glassy/plastic sheen
+- Typography with realistic letter spacing and baseline alignment
+- Soft, short, single-light-source shadows from top-left
+- Clean, restrained, print-quality B2B design (Stripe or Linear aesthetic).
+
+================================================================================
+4. CANVA / FIGMA SCREENSHOT COMPOSITING INSTRUCTIONS
+================================================================================
+
+Time required: 5-10 minutes (Free tool)
+
+Option A: Figma (Recommended for precise alignment)
+1. Import the AI-generated poster background image into Figma frame (1080x1350px).
+2. Import your actual StockFlow dashboard screenshot.
+3. Place the screenshot over the laptop frame in the poster.
+4. Use Figma's "Skew" / Vector edit or "Perspective" plugin to align the screenshot corners with the angled laptop frame screen area.
+5. Add a subtle inner shadow or rounded corners (4-8px radius) to fit inside the screen bezel.
+6. Export frame as PNG.
+
+Option B: Canva
+1. Upload poster background to Canva (1080x1350px canvas).
+2. Upload dashboard screenshot.
+3. Drag screenshot over the laptop frame, adjust size/rotation/crop to fit inside the screen outline.
+4. Export as High-Resolution PNG.
+
+================================================================================
+5. META ADS CAMPAIGN TARGETING & BUDGET CONFIGURATION
+================================================================================
+
+CAMPAIGN LEVEL:
+- Objective: Engagement -> Messaging Apps (WhatsApp) OR Leads -> WhatsApp.
+- Campaign Budget Optimization (CBO) or Daily Budget: $10 - $20 / day (Initial validation phase).
+
+AD SET LEVEL:
+- Conversion Location: Messaging Apps (WhatsApp).
+- Target Destinations: Select both connected WhatsApp Business numbers (+971 for UAE, +974 for Qatar).
+- Locations:
+  * Qatar (All)
+  * United Arab Emirates (Dubai, Abu Dhabi, Sharjah focus)
+- Age: 25 - 55+
+- Languages: English & Arabic
+
+Detailed Targeting Keywords (Include any of):
+- Warehouse Management System
+- Inventory Control / Inventory Management
+- Logistics & Supply Chain Management
+- Enterprise Resource Planning (ERP)
+- Freight Forwarding / Logistics
+- E-commerce Operations
+- Job Titles (Optional): Warehouse Manager, Operations Director, Supply Chain Manager, Founder, Managing Director.
+
+Placements: Advantage+ Placements (Feed, Stories, Reels on IG & FB).
+
+AD CREATIVE COPY:
+--------------------------------------------------------------------------------
+Primary Text:
+"Still tracking warehouse stock, inbounds, and outbounds on messy spreadsheets? 
+
+StockFlow is the modern, customizable dashboard built specifically for growing businesses in Qatar and the UAE. Track inventory levels live, manage dispatch orders seamlessly, and tailor workflows to match your exact operations.
+
+💬 Message us on WhatsApp for a quick 1-on-1 demo & custom quote!"
+
+Headline:
+"Simplify Your Warehouse Operations | Qatar & UAE 🇶🇦 🇦🇪"
+
+Description:
+"Custom Dashboards for Stock, Inbound & Outbound Control."
+
+Call to Action (CTA Button):
+"Send WhatsApp Message"
+
+================================================================================
+6. NEXT.JS TRUST LANDING PAGE ARCHITECTURE & FULL COPY
+================================================================================
+
+Tech Stack: Next.js (App Router), Tailwind CSS, Lucide-React icons.
+Goal: Single-page responsive site providing quick social proof & direct WhatsApp CTAs.
+
+PAGE STRUCTURE & CONTENT:
+
+--------------------------------------------------------------------------------
+[NAVBAR]
+- Logo: StockFlow
+- Tagline/Badge: Serving Qatar 🇶🇦 & UAE 🇦🇪
+- Right CTA Button: "Chat on WhatsApp" (Direct link: https://wa.me/971547400553)
+
+--------------------------------------------------------------------------------
+[HERO SECTION]
+- Eyebrow: WAREHOUSE MANAGEMENT SYSTEM
+- Main Headline: "Manage Inbound, Outbound & Stock — Tailored to Your Workflow."
+- Subheadline: "Replace clunky spreadsheets with a custom real-time dashboard built for warehouses and logistics operators in Qatar & UAE."
+- Primary Hook: "Discuss Your Warehouse Workflow with Our Team — Live Tailored Walkthrough Configured for Your Operation."
+- Primary CTAs:
+  [ 💬 Chat on WhatsApp (+974 7236 0418) ] -> wa.me/97472360418
+- Visual: Embedded High-Resolution Screenshot of StockFlow Dashboard in a modern browser frame with subtle shadow.
+
+--------------------------------------------------------------------------------
+[TRUST / REGIONAL BAR]
+- Text: "Local Support & On-Site Setup Available Across Dubai, Abu Dhabi, Doha & Beyond."
+- Badges: Custom Workflow Setup | Real-Time Stock Tracking | Multi-Location Ready
+
+--------------------------------------------------------------------------------
+[FEATURE BLOCKS - GRID OF 4]
+
+1. Inbound Management
+   Icon: ArrowDownRight / Inbox
+   Title: "Streamline Inbounds"
+   Text: "Receive shipments, verify purchase orders, and update stock counts instantaneously without data discrepancies."
+
+2. Outbound & Dispatch
+   Icon: ArrowUpRight / Truck
+   Title: "Faster Outbound Operations"
+   Text: "Generate pick lists, track fulfillment stages, and speed up dispatch processing times for error-free delivery."
+
+3. Live Stock & Inventory Control
+   Icon: Layers / Package
+   Title: "Real-Time Stock Visibility"
+   Text: "Never run out of critical SKUs or overstock items. Get instant alerts, batch tracking, and item movement history."
+
+4. Fully Customizable Workflow
+   Icon: Sliders / Settings
+   Title: "Tailored to How You Work"
+   Text: "No forced complex structures. We customize dashboard layouts, reports, and fields around your existing processes."
+
+--------------------------------------------------------------------------------
+[HOW IT WORKS / GETTING STARTED - 3 EASY STEPS]
+1. Connect via WhatsApp — Share your current warehouse setup and pain points.
+2. See Your Custom Demo — We show you a tailored dashboard demo configured for your business.
+3. Launch & Scale — Onboard your team with local ongoing support in Qatar and UAE.
+
+--------------------------------------------------------------------------------
+[FOOTER]
+- StockFlow © 2026. All rights reserved.
+- Direct Contact:
+  Official WhatsApp: +974 7236 0418 (Serving Qatar & UAE)
+- Privacy Policy | Terms of Service
+
+================================================================================
+7. OPERATIONAL WORKFLOW & LEAD HANDLING PLAN
+================================================================================
+
+Leads Routing:
+- All incoming leads from Meta Ads (Qatar & UAE) arrive at: +974 7236 0418
+
+SLA Response Time:
+- Respond to all incoming WhatsApp ad leads within 5 - 15 minutes.
+- Quick Response Template:
+  "Hi [Name]! Thanks for reaching out to StockFlow. We build customizable warehouse management dashboards for businesses in [Qatar/UAE]. Could you share what type of products you store and what your biggest inventory challenge is right now?"
+
+================================================================================
+8. LAUNCH EXECUTION CHECKLIST
+================================================================================
+
+[ ] Step 1: Create Facebook Business Page & Instagram Account.
+[ ] Step 2: Set up WhatsApp Business on both phones and link to FB Page.
+[ ] Step 3: Generate poster background using AI Prompt in Midjourney/DALL-E/Flux.
+[ ] Step 4: Overlay real dashboard screenshot onto laptop frame in Figma/Canva.
+[ ] Step 5: Build and deploy 1-page Next.js landing page to Vercel/Netlify.
+[ ] Step 6: Create Meta Ad Campaign (WhatsApp Messages objective) & set budget.
+[ ] Step 7: Launch ads, monitor WhatsApp leads, and refine targeting based on responses.
+
+================================================================================

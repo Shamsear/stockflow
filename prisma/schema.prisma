@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ------------------------------------------------------
+// AUTHENTICATION
+// ------------------------------------------------------
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String   // bcrypt hashed password
+  name      String
+  email     String?  @unique
+  role      String   @default("ADMIN") // ADMIN, MANAGER, etc.
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([username])
+}
+
+// ------------------------------------------------------
+// CORE ENTITIES
+// ------------------------------------------------------
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  imageUrl    String?
+  rack        String?
+  shelf       String?
+  isPublic    Boolean   @default(true)
+  secretKey   String    @unique @default(uuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+  stores      Store[]
+}
+
+model Product {
+  id             String    @id @default(uuid())
+  brandId        String
+  itemCode       String?   @unique
+  name           String    // e.g. "Sadia Yellow T-Shirt (Large)"
+  category       String?   
+  size           String?   // For uniforms: XS, S, M, L, XL, XXL, XXXL
+  imageUrl       String?
+  rack           String?
+  shelf          String?
+  isReturnable   Boolean   @default(false) 
+  isDisposable   Boolean   @default(false)
+  trackExpiry    Boolean   @default(false)
+  isPublic       Boolean   @default(true)
+  isSerialized   Boolean   @default(false) 
+  stockCap       Int?      
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  brand          Brand     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  transactions   InventoryTransaction[]
+  serialNumbers  ProductSerialNumber[] 
+
+  @@index([name])
+  @@index([brandId])
+}
+
+// ------------------------------------------------------
+// PEOPLE & PLACES
+// ------------------------------------------------------
+
+model Supervisor {
+  id           String   @id @default(uuid())
+  name         String   // e.g., "Shanawas", "Zeeshan"
+  email        String?
+  phone        String?
+  allocations  StaffUniformAllocation[]
+  deliveries   InventoryTransaction[]   @relation("DeliverySupervisor")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Store {
+  id        String   @id @default(uuid())
+  name      String   // e.g., "Lulu Hypermarket Khalifa City"
+  region    String?  // e.g., "AUH", "SHJ"
+  location  String?
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  staff     Staff[]  
+  brands    Brand[]
+  allocations StaffUniformAllocation[]
+
+  @@index([name])
+}
+
+model Staff {
+  id           String   @id @default(uuid())
+  name         String   // Promoter Name
+  phone        String?  // Promoter Contact
+  shirtSize    String?  // e.g., "Small", "Medium", "Large"
+  
+  storeId      String?  
+  store        Store?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  allocations  StaffUniformAllocation[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([name])
+}
+
+
+// ------------------------------------------------------
+// STAFF UNIFORM ALLOCATION TRACKING
+// ------------------------------------------------------
+
+model StaffUniformAllocation {
+  id              String    @id
+  staffId         String
+  staff           Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  storeId         String
+  store           Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  
+  // Legacy uniform fields (kept for backward compatibility)
+  uniformQty      Int       @default(0)
+  capQty          Int       @default(0)
+  uniformReturned Boolean   @default(false)
+  capReturned     Boolean   @default(false)
+  
+  // Dynamic Items JSON (e.g. [{ id, type, size, qty, returned, returnedAt }])
+  allocatedItems  Json      @default("[]")
+  
+  workingPeriod   String?   // e.g., "22th Apr - 4th May"
+  
+  supervisorId    String?
+  supervisor      Supervisor? @relation(fields: [supervisorId], references: [id], onDelete: SetNull)
+  
+  givenDate       DateTime  @default(now())
+  returnDate      DateTime?
+  notes           String?
+  ref             String?   // e.g. UNF-SAD-200826-001
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([staffId])
+  @@index([storeId])
+  @@index([supervisorId])
+}
+
+// ------------------------------------------------------
+// SERIAL NUMBER TRACKING
+// ------------------------------------------------------
+
+model ProductSerialNumber {
+  id              String   @id @default(uuid())
+  productId       String
+  barcode         String   @unique 
+  secondaryBarcode String? 
+  
+  currentLocationType String?  
+  currentLocationId   String?  
+  
+  status          String   @default("AVAILABLE") 
+  manufactureDate DateTime?
+  expiryDate      DateTime?
+
+  replacesId      String?  @unique
+  replaces        ProductSerialNumber? @relation("SerialReplacement", fields: [replacesId], references: [id])
+  replacedBy      ProductSerialNumber? @relation("SerialReplacement")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  transactions    TransactionSerialNumber[] 
+
+  @@index([currentLocationType, currentLocationId])
+  @@index([productId])
+  @@index([barcode])
+  @@index([status])
+}
+
+// ------------------------------------------------------
+// INVENTORY TRACKING (THE LEDGER)
+// ------------------------------------------------------
+
+model InventoryTransaction {
+  id              String   @id @default(uuid())
+  productId       String
+  
+  transactionType String   // e.g., 'RECEIVE', 'ISSUE', 'RETURN', 'DAMAGE', etc.
+  
+  fromEntityType  String?  
+  fromEntityId    String?  
+  toEntityType    String?  
+  toEntityId      String?  
+  quantity        Int
+  
+  deliveryNote          String?
+  deliveryStatus        String?  
+  notes                 String?
+  receivedBy            String?
+  deliverySupervisorId  String?
+  deliverySupervisor    Supervisor? @relation("DeliverySupervisor", fields: [deliverySupervisorId], references: [id], onDelete: SetNull)
+  
+  returnStatus    String?  // 'RETURNED', 'PARTIAL', 'USED'
+  returnedQty     Int      @default(0)
+  returnNotes     String?
+  
+  manufactureDate DateTime?
+  expiryDate      DateTime?
+  timestamp       DateTime @default(now())
+
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  serialNumbers   TransactionSerialNumber[]
+
+  @@index([timestamp])
+  @@index([transactionType])
+  @@index([fromEntityType, fromEntityId])
+  @@index([toEntityType, toEntityId])
+  @@index([productId])
+  @@index([transactionType, timestamp])
+  @@index([transactionType, productId])
+  @@index([deliveryNote])
+  @@index([transactionType, fromEntityType, fromEntityId])
+  @@index([transactionType, toEntityType, toEntityId])
+}
+
+model TransactionSerialNumber {
+  transactionId  String
+  serialNumberId String
+
+  transaction    InventoryTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  serialNumber   ProductSerialNumber  @relation(fields: [serialNumberId], references: [id], onDelete: Cascade)
+
+  @@id([transactionId, serialNumberId])
+  @@index([serialNumberId])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
+
+model ScanSession {
+  id        String   @id
+  barcodes  String[]
+  createdAt DateTime @default(now())
+}
+
+
+

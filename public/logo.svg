@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" width="100%" height="100%" fill="none">
+  <!-- StockFlow Brandmark: Swiss Geometric Glyph + Typography -->
+  <g transform="translate(0, 0)">
+    <!-- Top Inbound Tier -->
+    <path d="M6 14C6 10.6863 8.68629 8 12 8H32C33.1046 8 34 8.89543 34 10V16C34 17.1046 33.1046 18 32 18H16C13.7909 18 12 19.7909 12 22C12 22.5523 11.5523 23 11 23H7C6.44772 23 6 22.5523 6 22V14Z" fill="#0F172A" />
+    <!-- Flow Directional Core -->
+    <rect x="16" y="21" width="8" height="6" rx="3" fill="#0F766E" />
+    <!-- Bottom Outbound Tier -->
+    <path d="M34 34C34 37.3137 31.3137 40 28 40H8C6.89543 40 6 39.1046 6 38V32C6 30.8954 6.89543 30 8 30H24C26.2091 30 28 28.2091 28 26C28 25.4477 28.4477 25 29 25H33C33.5523 25 34 25.4477 34 26V34Z" fill="#0F766E" />
+  </g>
+
+  <!-- Wordmark -->
+  <text x="46" y="32" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="24" font-weight="800" fill="#0F172A" letter-spacing="-0.04em">Stock<tspan font-weight="600" fill="#0F766E">Flow</tspan></text>
+</svg>

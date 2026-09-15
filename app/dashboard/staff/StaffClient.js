@@ -1,0 +1,1137 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { deleteStaff, returnUniformItem, bulkReturnUniformItems, deleteAllocation } from '@/app/actions/staff';
+import { 
+  Users, Plus, Trash2, Phone, Shirt, Search, Loader2, 
+  CheckCircle, Building2, Inbox, Calendar, Edit2, AlertCircle, X
+} from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
+import { useToast } from '@/components/Toast';
+import ConfirmModal from '@/components/ConfirmModal';
+import TabNav from '@/components/TabNav';
+
+export default function StaffClient({ initialStaff, stores }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [staffList, setStaffList] = useState(initialStaff);
+  const [activeTab, setActiveTab] = useState('ledger'); // 'ledger' or 'promoters'
+  
+  // Loading & search state
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmData, setConfirmData] = useState({ title: '', message: '', danger: false, onConfirm: null });
+  const [ledgerSearch, setLedgerSearch] = useState('');
+  const [ledgerFilter, setLedgerFilter] = useState('all'); // 'all', 'active', 'returned'
+  
+  // Bulk selection state
+  const [selectedAllocIds, setSelectedAllocIds] = useState([]);
+
+  // Promoter detail modal state
+  const [selectedPromoter, setSelectedPromoter] = useState(null);
+
+  // Return Modal states
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [returnAllocIds, setReturnAllocIds] = useState([]);
+  const [returnPromoterNames, setReturnPromoterNames] = useState([]);
+  const [returnNotes, setReturnNotes] = useState('');
+  const [returnError, setReturnError] = useState('');
+  const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
+
+  // Construct flat list of all allocations (Memoized)
+  const allAllocations = useMemo(() => {
+    return staffList.flatMap(staff => 
+      (staff.allocations || []).map(alloc => ({
+        ...alloc,
+        staffId: staff.id,
+        staffName: staff.name,
+        staffPhone: staff.phone,
+        staffShirtSize: staff.shirtSize,
+      }))
+    ).sort((a, b) => new Date(b.givenDate) - new Date(a.givenDate));
+  }, [staffList]);
+
+  // Helper to parse allocated items safely
+  const getAllocatedItems = (a) => {
+    if (!a.allocatedItems) return [];
+    if (typeof a.allocatedItems === 'string') {
+      try { return JSON.parse(a.allocatedItems); } catch(e) { return []; }
+    }
+    return Array.isArray(a.allocatedItems) ? a.allocatedItems : [];
+  };
+
+  const isAllocationFullyReturned = (a) => {
+    const hasUniform = a.uniformQty > 0;
+    const hasCap = a.capQty > 0;
+    const uniformReturnedOk = !hasUniform || a.uniformReturned;
+    const capReturnedOk = !hasCap || a.capReturned;
+    
+    const items = getAllocatedItems(a);
+    const itemsReturnedOk = items.every(i => i.returned);
+    
+    return uniformReturnedOk && capReturnedOk && itemsReturnedOk && (hasUniform || hasCap || items.length > 0);
+  };
+
+  const getOverdueStatus = (alloc) => {
+    if (isAllocationFullyReturned(alloc)) return false;
+
+    const period = alloc.workingPeriod || '';
+    if (period.includes(' to ')) {
+      const parts = period.split(' to ');
+      const endDateStr = parts[1]?.trim();
+      if (endDateStr) {
+        const endDate = new Date(endDateStr);
+        endDate.setHours(23, 59, 59, 999);
+        return new Date() > endDate;
+      }
+    }
+    return false;
+  };
+
+  // Compute summary stats (Memoized in a single loop)
+  const {
+    totalAllocationsCount,
+    activeAllocationsCount,
+    returnedAllocationsCount,
+    totalActiveQty,
+    overdueAllocationsCount
+  } = useMemo(() => {
+    const totalCount = allAllocations.length;
+    let activeCount = 0;
+    let returnedCount = 0;
+    let activeQty = 0;
+    let overdueCount = 0;
+
+    allAllocations.forEach(a => {
+      const isFullyReturned = isAllocationFullyReturned(a);
+      const hasItems = a.uniformQty > 0 || a.capQty > 0 || getAllocatedItems(a).length > 0;
+      if (hasItems && !isFullyReturned) {
+        activeCount++;
+      }
+      if (isFullyReturned) {
+        returnedCount++;
+      }
+      
+      const activeUniform = (a.uniformQty > 0 && !a.uniformReturned) ? a.uniformQty : 0;
+      const activeCap = (a.capQty > 0 && !a.capReturned) ? a.capQty : 0;
+      const items = getAllocatedItems(a);
+      const activeItemsQty = items.filter(i => !i.returned).reduce((sum, i) => sum + parseInt(i.qty || 0, 10), 0);
+      
+      activeQty += activeUniform + activeCap + activeItemsQty;
+      
+      if (getOverdueStatus(a)) {
+        overdueCount++;
+      }
+    });
+
+    return {
+      totalAllocationsCount: totalCount,
+      activeAllocationsCount: activeCount,
+      returnedAllocationsCount: returnedCount,
+      totalActiveQty: activeQty,
+      overdueAllocationsCount: overdueCount
+    };
+  }, [allAllocations]);
+
+  const handlePromoterDelete = (id) => {
+    setConfirmData({
+      title: 'Delete Promoter?',
+      message: 'All associated allocations will be deleted.',
+      danger: true,
+      confirmLabel: 'Delete Promoter',
+      onConfirm: async () => {
+        setLoading(true);
+        try {
+          await deleteStaff(id);
+          setStaffList(prev => prev.filter(s => s.id !== id));
+          toast.success('Promoter Deleted', 'The promoter profile has been removed.');
+        } catch (err) {
+          toast.error('Delete Failed', err.message || 'Could not delete promoter.');
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+    setConfirmOpen(true);
+  };
+
+  const handleAllocationDelete = (id) => {
+    setConfirmData({
+      title: 'Delete Allocation?',
+      message: 'This will undo / delete this uniform allocation record.',
+      danger: true,
+      confirmLabel: 'Delete Allocation',
+      onConfirm: async () => {
+        setLoading(true);
+        try {
+          await deleteAllocation(id);
+          router.refresh();
+          toast.success('Allocation Deleted', 'The allocation record has been removed.');
+        } catch (err) {
+          toast.error('Delete Failed', err.message || 'Could not delete allocation.');
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+    setConfirmOpen(true);
+  };
+
+  const [returnItemsState, setReturnItemsState] = useState({ legacyUniform: false, legacyCap: false, itemIds: [] });
+  const [availableReturnItems, setAvailableReturnItems] = useState({ legacyUniform: false, legacyCap: false, items: [] });
+
+  const openSingleReturnModal = (alloc) => {
+    setReturnAllocIds([alloc.id]);
+    setReturnPromoterNames([alloc.staffName]);
+    setReturnNotes('');
+    setReturnError('');
+    
+    // Determine what can be returned
+    const canReturnUniform = alloc.uniformQty > 0 && !alloc.uniformReturned;
+    const canReturnCap = alloc.capQty > 0 && !alloc.capReturned;
+    const dynamicItems = getAllocatedItems(alloc).filter(i => !i.returned);
+    
+    setAvailableReturnItems({
+      legacyUniform: canReturnUniform,
+      legacyCap: canReturnCap,
+      items: dynamicItems
+    });
+    
+    // Select all by default
+    setReturnItemsState({
+      legacyUniform: canReturnUniform,
+      legacyCap: canReturnCap,
+      itemIds: dynamicItems.map(i => i.id)
+    });
+
+    setIsReturnModalOpen(true);
+  };
+
+  const openBulkReturnModal = () => {
+    const selectedAllocs = allAllocations.filter(a => selectedAllocIds.includes(a.id));
+    const names = selectedAllocs.map(a => a.staffName);
+    setReturnAllocIds(selectedAllocIds);
+    setReturnPromoterNames(names);
+    setReturnNotes('');
+    setReturnError('');
+    setAvailableReturnItems({ legacyUniform: false, legacyCap: false, items: [] });
+    setReturnItemsState({ legacyUniform: false, legacyCap: false, itemIds: [] });
+    setIsReturnModalOpen(true);
+  };
+
+  const handleReturnSubmit = async (e) => {
+    e.preventDefault();
+    if (!returnNotes.trim()) {
+      setReturnError('Return remarks are required.');
+      return;
+    }
+    
+    if (returnAllocIds.length === 1) {
+      if (!returnItemsState.legacyUniform && !returnItemsState.legacyCap && returnItemsState.itemIds.length === 0) {
+        setReturnError('Please select at least one item to return.');
+        return;
+      }
+    }
+
+    setIsSubmittingReturn(true);
+    setReturnError('');
+    try {
+      if (returnAllocIds.length === 1) {
+        await returnUniformItem(returnAllocIds[0], returnItemsState, returnNotes);
+      } else {
+        await bulkReturnUniformItems(returnAllocIds, returnNotes);
+      }
+      setIsReturnModalOpen(false);
+      setSelectedAllocIds([]);
+      toast.success('Return Processed', 'Items have been marked as returned.');
+      router.refresh();
+    } catch (err) {
+      setReturnError(err.message || 'Failed to submit return.');
+      setIsSubmittingReturn(false);
+    }
+  };
+
+  // Filter lists
+  const filteredPromoters = staffList.filter(staff =>
+    staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (staff.phone && staff.phone.includes(searchQuery)) ||
+    (staff.store && staff.store.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const filteredAllocations = allAllocations.filter(alloc => {
+    const matchesSearch = 
+      alloc.staffName.toLowerCase().includes(ledgerSearch.toLowerCase()) ||
+      (alloc.store?.name || '').toLowerCase().includes(ledgerSearch.toLowerCase()) ||
+      (alloc.workingPeriod || '').toLowerCase().includes(ledgerSearch.toLowerCase()) ||
+      (alloc.notes || '').toLowerCase().includes(ledgerSearch.toLowerCase());
+
+    const isFullyReturned = isAllocationFullyReturned(alloc);
+
+    const matchesStatus = 
+      ledgerFilter === 'all' ||
+      (ledgerFilter === 'active' && !isFullyReturned) ||
+      (ledgerFilter === 'returned' && isFullyReturned);
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Calculate bulk selection helper sets
+  const activeFilteredAllocations = filteredAllocations.filter(a => !isAllocationFullyReturned(a));
+
+  const isAllSelected = activeFilteredAllocations.length > 0 && 
+                        activeFilteredAllocations.every(a => selectedAllocIds.includes(a.id));
+
+  return (
+    <div className="flex flex-col gap-6 font-sans relative">
+      <div className="absolute top-0 right-0 pointer-events-none opacity-5 overflow-hidden">
+        <Users size={250} />
+      </div>
+      {/* Page Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-border">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-text-primary tracking-tight">
+            Uniform Assigning &amp; Tracking
+          </h1>
+          <p className="text-text-secondary text-sm mt-1">
+            Allocate promoter uniforms and caps, track active store placements, working periods, and manage returns.
+          </p>
+        </div>
+      </header>
+
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-surface border border-border p-3 sm:p-4 rounded-xl shadow-sm flex items-center gap-2 sm:gap-4 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-sm bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+            <Shirt className="w-4 h-4 sm:w-5 sm:h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[9px] sm:text-[10px] font-bold text-text-secondary uppercase tracking-wider block truncate">Total Allocated Logs</span>
+            <span className="text-lg sm:text-2xl font-display font-extrabold text-text-primary block">{totalAllocationsCount}</span>
+          </div>
+        </div>
+
+        <div className="bg-surface border border-border p-3 sm:p-4 rounded-xl shadow-sm flex items-center gap-2 sm:gap-4 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-sm bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
+            <Inbox className="w-4 h-4 sm:w-5 sm:h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[9px] sm:text-[10px] font-bold text-text-secondary uppercase tracking-wider block truncate">Active Allocations</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-lg sm:text-2xl font-display font-extrabold text-warning">{activeAllocationsCount}</span>
+              {overdueAllocationsCount > 0 && (
+                <span className="text-[8px] sm:text-[10px] font-extrabold text-danger bg-danger/10 border border-danger/15 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 has-tooltip cursor-help flex-shrink-0">
+                  {overdueAllocationsCount} overdue
+                  <span className="tooltip-box font-sans text-2xs uppercase">Past working period end date and not returned</span>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-surface border border-border p-3 sm:p-4 rounded-xl shadow-sm flex items-center gap-2 sm:gap-4 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-sm bg-success/10 text-success flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[9px] sm:text-[10px] font-bold text-text-secondary uppercase tracking-wider block truncate">Returned &amp; Closed</span>
+            <span className="text-lg sm:text-2xl font-display font-extrabold text-success block">{returnedAllocationsCount}</span>
+          </div>
+        </div>
+
+        <div className="bg-surface border border-border p-3 sm:p-4 rounded-xl shadow-sm flex items-center gap-2 sm:gap-4 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-sm bg-secondary/15 text-secondary flex items-center justify-center flex-shrink-0">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[9px] sm:text-[10px] font-bold text-text-secondary uppercase tracking-wider block truncate">Total Items in Field</span>
+            <span className="text-lg sm:text-2xl font-display font-extrabold text-text-primary block">{totalActiveQty}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs Selector */}
+      <TabNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        tabs={[
+          { key: 'ledger', label: 'Allocations Ledger', icon: <Inbox size={15} /> },
+          { key: 'promoters', label: 'Promoters Directory', icon: <Users size={15} /> },
+        ]}
+      />
+
+      {/* Main Tab Content */}
+      <div className="w-full flex flex-col gap-4">
+        {activeTab === 'ledger' ? (
+          /* TAB 1: ALLOCATIONS LEDGER */
+          <div className="flex flex-col gap-4">
+            
+            {/* Bulk Actions Bar */}
+            {selectedAllocIds.length > 0 && (
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-3.5 flex items-center justify-between animate-slide-down shadow-sm">
+                <div className="flex items-center gap-2 text-xs text-text-primary font-bold">
+                  <CheckCircle size={16} className="text-primary" />
+                  <span>Selected {selectedAllocIds.length} active allocation{selectedAllocIds.length > 1 ? 's' : ''} for return</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={openBulkReturnModal}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-success hover:bg-success-hover text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm"
+                  >
+                    Bulk Return Items
+                  </button>
+                  <button
+                    onClick={() => setSelectedAllocIds([])}
+                    className="px-3.5 py-1.5 bg-surface hover:bg-surface-elevated text-text-secondary rounded-lg text-xs font-semibold border border-border transition-colors cursor-pointer"
+                  >
+                    Cancel Selection
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Filter Bar */}
+            <div className="bg-surface border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+              <div className="relative flex-1 max-w-sm">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                <input 
+                  type="text" 
+                  className="w-full bg-surface text-text-primary placeholder:text-text-muted border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                  placeholder="Search ledger by promoter, store, working period..." 
+                  value={ledgerSearch} 
+                  onChange={(e) => setLedgerSearch(e.target.value)} 
+                />
+              </div>
+
+              {/* Status Filters */}
+              <div className="flex items-center gap-1 bg-surface-elevated p-0.5 rounded-lg border border-border">
+                {[
+                  { value: 'all', label: 'All Allocations' },
+                  { value: 'active', label: 'Active (Out)' },
+                  { value: 'returned', label: 'Returned' },
+                ].map((btn) => (
+                  <button
+                    key={btn.value}
+                    onClick={() => setLedgerFilter(btn.value)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer
+                      ${ledgerFilter === btn.value
+                        ? 'bg-surface text-text-primary shadow-sm border border-border'
+                        : 'text-text-secondary hover:text-text-primary border border-transparent'
+                      }
+                    `}
+                  >
+                    {btn.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Card View */}
+            {filteredAllocations.length === 0 ? (
+              <div className="md:hidden bg-surface border border-border rounded-xl shadow-sm py-16 text-center flex flex-col items-center gap-3 text-text-muted">
+                <Shirt size={48} />
+                <h3 className="font-display font-bold text-lg text-text-primary">No Allocations Logged</h3>
+                <p className="text-sm max-w-xs">No promoter uniform assignments match your filter parameters.</p>
+              </div>
+            ) : (
+              <div className="md:hidden flex flex-col gap-3">
+                {filteredAllocations.map((alloc) => {
+                  const isFullyReturned = isAllocationFullyReturned(alloc);
+                  const items = getAllocatedItems(alloc);
+                  return (
+                    <div key={alloc.id} className="bg-surface border border-border rounded-xl p-4 flex flex-col gap-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" checked={selectedAllocIds.includes(alloc.id)} onChange={(e) => { if (e.target.checked) setSelectedAllocIds(prev => [...prev, alloc.id]); else setSelectedAllocIds(prev => prev.filter(id => id !== alloc.id)); }} className="w-4 h-4 rounded accent-primary cursor-pointer" disabled={isFullyReturned} />
+                            <span className="font-semibold text-sm text-text-primary">{alloc.staffName}</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1 text-[11px] text-text-muted">
+                            <Building2 size={11} /><span>{alloc.store?.name || 'Unknown'}</span>
+                            <span>·</span>
+                            <span>{alloc.workingPeriod || '---'}</span>
+                          </div>
+                        </div>
+                        {isFullyReturned && <span className="badge badge-success text-[9px]">Returned</span>}
+                      </div>
+                      <div className="flex flex-col gap-1 text-[11px]">
+                        {alloc.uniformQty > 0 && <div className="flex justify-between"><span>{alloc.uniformQty}x Shirt</span>{alloc.uniformReturned ? <span className="text-success font-bold">Returned</span> : <span className="text-warning font-bold">Active</span>}</div>}
+                        {alloc.capQty > 0 && <div className="flex justify-between"><span>{alloc.capQty}x Cap</span>{alloc.capReturned ? <span className="text-success font-bold">Returned</span> : <span className="text-warning font-bold">Active</span>}</div>}
+                        {items.map((item, idx) => <div key={item.id || idx} className="flex justify-between"><span>{item.qty}x {item.type} ({item.size})</span>{item.returned ? <span className="text-success font-bold">Returned</span> : <span className="text-warning font-bold">Active</span>}</div>)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
+              {filteredAllocations.length === 0 ? (
+                <div className="py-16 text-center flex flex-col items-center gap-3 text-text-muted">
+                  <Shirt size={48} />
+                  <h3 className="font-display font-bold text-lg text-text-primary">No Allocations Logged</h3>
+                  <p className="text-sm max-w-xs">No promoter uniform assignments match your filter parameters.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-border text-sm">
+                    <thead>
+                      <tr className="text-left text-xs font-bold text-text-secondary uppercase tracking-wider bg-surface-elevated/40">
+                        <th className="py-3 px-5 w-12 text-left">
+                          <input
+                            type="checkbox"
+                            className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
+                            checked={isAllSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                const activeIds = activeFilteredAllocations.map(a => a.id);
+                                setSelectedAllocIds(activeIds);
+                              } else {
+                                setSelectedAllocIds([]);
+                              }
+                            }}
+                          />
+                        </th>
+                        <th className="py-3 px-5">Promoter</th>
+                        <th className="py-3 px-5">Store Location</th>
+                        <th className="py-3 px-5">Allocated Items</th>
+                        <th className="py-3 px-5">Working Period</th>
+                        <th className="py-3 px-5">Issued Date</th>
+                        <th className="py-3 px-5 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border text-text-primary">
+                      {filteredAllocations.map((alloc) => {
+                        const isFullyReturned = isAllocationFullyReturned(alloc);
+                        const items = getAllocatedItems(alloc);
+                        
+                        return (
+                          <tr key={alloc.id} className="hover:bg-surface-elevated/20 transition-colors">
+                            <td className="py-3.5 px-5 w-12">
+                              {!isFullyReturned ? (
+                                <input
+                                  type="checkbox"
+                                  className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
+                                  checked={selectedAllocIds.includes(alloc.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedAllocIds(prev => [...prev, alloc.id]);
+                                    } else {
+                                      setSelectedAllocIds(prev => prev.filter(id => id !== alloc.id));
+                                    }
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              ) : (
+                                <input
+                                  type="checkbox"
+                                  disabled
+                                  checked
+                                  className="w-4 h-4 rounded text-success/40 accent-success/30 cursor-not-allowed"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              )}
+                            </td>
+                            <td className="py-3.5 px-5">
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-xs text-text-primary">{alloc.staffName}</span>
+                                <span className="text-[10px] text-text-secondary mt-0.5">Size: <strong>{alloc.staffShirtSize || 'M'}</strong></span>
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-5">
+                              <div className="flex items-center gap-1 text-xs text-text-secondary">
+                                <Building2 size={13} className="text-text-muted flex-shrink-0" />
+                                <span className="truncate max-w-[160px] font-semibold text-text-primary">{alloc.store?.name || 'Unknown Store'}</span>
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-5 min-w-[250px]">
+                              <div className="flex flex-col gap-1.5">
+                                {alloc.uniformQty > 0 && (
+                                  <div className="flex items-center justify-between gap-3 text-xs whitespace-nowrap">
+                                    <span className="font-semibold text-text-primary">{alloc.uniformQty}x Shirt (Legacy)</span>
+                                    {alloc.uniformReturned ? (
+                                      <span className="px-1.5 py-0.5 bg-success/15 text-success text-[9px] font-bold rounded">Returned</span>
+                                    ) : (
+                                      <span className="px-1.5 py-0.5 bg-warning/15 text-warning text-[9px] font-bold rounded">Active</span>
+                                    )}
+                                  </div>
+                                )}
+                                {alloc.capQty > 0 && (
+                                  <div className="flex items-center justify-between gap-3 text-xs whitespace-nowrap">
+                                    <span className="font-semibold text-text-primary">{alloc.capQty}x Cap (Legacy)</span>
+                                    {alloc.capReturned ? (
+                                      <span className="px-1.5 py-0.5 bg-success/15 text-success text-[9px] font-bold rounded">Returned</span>
+                                    ) : (
+                                      <span className="px-1.5 py-0.5 bg-warning/15 text-warning text-[9px] font-bold rounded">Active</span>
+                                    )}
+                                  </div>
+                                )}
+                                {items.map((item, idx) => (
+                                  <div key={item.id || idx} className="flex items-center justify-between gap-3 text-xs whitespace-nowrap">
+                                    <span className="font-semibold text-text-primary">{item.qty}x {item.type} <span className="text-text-muted">({item.size})</span></span>
+                                    {item.returned ? (
+                                      <span className="px-1.5 py-0.5 bg-success/15 text-success text-[9px] font-bold rounded">
+                                        {item.type?.toLowerCase().includes('disposable') ? 'Used' : 'Returned'}
+                                      </span>
+                                    ) : (
+                                      <span className="px-1.5 py-0.5 bg-warning/15 text-warning text-[9px] font-bold rounded">Active</span>
+                                    )}
+                                  </div>
+                                ))}
+                                {alloc.uniformQty === 0 && alloc.capQty === 0 && items.length === 0 && (
+                                  <span className="text-text-muted text-xs">No items allocated</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-5 text-xs font-medium text-text-primary whitespace-nowrap">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-semibold text-text-primary">{alloc.workingPeriod || '---'}</span>
+                                {getOverdueStatus(alloc) && (
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-danger bg-danger/10 border border-danger/25 px-1.5 py-0.5 rounded w-fit uppercase">
+                                    Overdue
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-5 text-xs text-text-secondary font-mono whitespace-nowrap">
+                              {new Date(alloc.givenDate).toLocaleString('en-AE', { timeZone: 'Asia/Dubai', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                            <td className="py-3.5 px-5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-1.5 justify-end">
+                                <div className="has-tooltip">
+                                  <button
+                                    onClick={() => router.push(`/dashboard/staff/assign?id=${alloc.id}`)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-surface border border-border hover:bg-surface-elevated text-text-primary rounded text-[10px] font-bold transition-colors cursor-pointer"
+                                    type="button"
+                                  >
+                                    <Edit2 size={10} /> <span>Edit</span>
+                                  </button>
+                                  <span className="tooltip-box tooltip-left">Edit assignment log</span>
+                                </div>
+                                {( !isFullyReturned ) ? (
+                                  <div className="has-tooltip">
+                                    <button
+                                      onClick={() => openSingleReturnModal(alloc)}
+                                      className="px-2 py-1 bg-success hover:bg-success-hover text-white rounded text-[10px] font-bold transition-colors cursor-pointer"
+                                      type="button"
+                                    >
+                                      Return / Mark Used
+                                    </button>
+                                    <span className="tooltip-box tooltip-left">Mark items as returned or used</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] font-bold text-success uppercase tracking-wider block pr-2 animate-pulse">
+                                    Fully Returned
+                                  </span>
+                                )}
+                                <div className="has-tooltip">
+                                  <button
+                                    onClick={() => handleAllocationDelete(alloc.id)}
+                                    className="p-1.5 bg-danger/10 hover:bg-danger text-danger hover:text-white rounded transition-all cursor-pointer flex items-center justify-center"
+                                    type="button"
+                                  >
+                                    <Trash2 size={10} />
+                                  </button>
+                                  <span className="tooltip-box tooltip-left">Undo / Delete allocation</span>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* TAB 2: PROMOTERS DIRECTORY */
+          <div className="flex flex-col gap-4">
+            {/* Filter Bar */}
+            <div className="bg-surface border border-border rounded-xl p-4 flex items-center justify-between shadow-sm">
+              <div className="relative flex-1 max-w-sm">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                <input 
+                  type="text" 
+                  className="w-full bg-surface text-text-primary placeholder:text-text-muted border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                  placeholder="Search promoters by name, phone, store..." 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                />
+              </div>
+              <span className="text-xs font-semibold text-text-secondary">{filteredPromoters.length} promoters</span>
+            </div>
+
+            {/* Mobile Card View */}
+            {filteredPromoters.length === 0 ? (
+              <div className="md:hidden bg-surface border border-border rounded-xl shadow-sm">
+                <EmptyState
+                  icon={Users}
+                  title="No promoters yet"
+                  description="Promoters are field staff who receive uniform assignments. Add your first promoter to get started."
+                  actionLabel="Add Promoter"
+                  actionHref="/dashboard/staff/assign"
+                />
+              </div>
+            ) : (
+              <div className="md:hidden flex flex-col gap-2.5">
+                {filteredPromoters.map((staff) => (
+                  <div key={staff.id} onClick={() => setSelectedPromoter(staff)} className="bg-surface border border-border rounded-xl p-3 flex flex-col gap-2 cursor-pointer hover:border-primary/30 transition-all">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">{staff.name.charAt(0)}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-[13px] text-text-primary truncate">{staff.name}</span>
+                          <span className="text-[9px] text-text-muted font-semibold flex-shrink-0 px-1.5 py-0.5 bg-surface-elevated rounded border border-border">{staff.shirtSize || 'M'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-text-muted">
+                          <span className="truncate">{staff.phone || 'No Contact'}</span>
+                          {staff.store && (<><span className="text-text-muted/40">·</span><span className="text-primary font-semibold truncate">{staff.store.name}</span></>)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 pt-1.5 border-t border-border/40 text-[10px]" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={() => router.push(`/dashboard/staff/assign?staffId=${staff.id}`)} className="text-primary font-semibold hover:underline">Allocate</button>
+                      <button onClick={() => router.push(`/dashboard/staff/assign?editStaffId=${staff.id}`)} className="text-text-secondary hover:text-text-primary">Edit</button>
+                      <button onClick={() => handlePromoterDelete(staff.id)} className="text-danger/70 hover:text-danger ml-auto">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
+              {filteredPromoters.length === 0 ? (
+                <EmptyState
+                  icon={Users}
+                  title="No promoters yet"
+                  description="Promoters are field staff who receive uniform assignments. Add your first promoter to get started."
+                  actionLabel="Add Promoter"
+                  actionHref="/dashboard/staff/assign"
+                />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-border text-sm">
+                    <thead>
+                      <tr className="text-left text-xs font-bold text-text-secondary uppercase tracking-wider bg-surface-elevated/40">
+                        <th className="py-3 px-5">Promoter</th>
+                        <th className="py-3 px-5">Contact</th>
+                        <th className="py-3 px-5">Shirt Size</th>
+                        <th className="py-3 px-5">Current Store Placement</th>
+                        <th className="py-3 px-5">Uniform Inventory</th>
+                        <th className="py-3 px-5 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border text-text-primary">
+                      {filteredPromoters.map((staff) => (
+                        <tr 
+                          key={staff.id} 
+                          className="hover:bg-surface-elevated/30 transition-all duration-150 cursor-pointer font-medium"
+                          onClick={() => setSelectedPromoter(staff)}
+                        >
+                          <td className="py-3.5 px-5">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                {staff.name.charAt(0)}
+                              </div>
+                              <span className="font-semibold">{staff.name}</span>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-5 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                              <Phone size={13} className="text-text-muted flex-shrink-0" />
+                              <span>{staff.phone || 'No Contact'}</span>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-5 whitespace-nowrap">
+                            <span className="badge badge-info text-[10px] inline-flex items-center gap-0.5">
+                              <Shirt size={10} /> 
+                              <span>{staff.shirtSize || 'M'}</span>
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-5 whitespace-nowrap">
+                            <span className={`text-xs ${staff.store ? 'text-text-primary font-semibold' : 'text-text-muted'}`}>
+                              {staff.store ? staff.store.name : 'Unassigned'}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            {(() => {
+                              const activeCount = staff.allocations?.filter(a => {
+                                return (a.uniformQty > 0 && !a.uniformReturned) || (a.capQty > 0 && !a.capReturned);
+                              }).reduce((acc, a) => acc + (a.uniformReturned ? 0 : a.uniformQty) + (a.capReturned ? 0 : a.capQty), 0) || 0;
+                              
+                              const totalCount = staff.allocations?.reduce((acc, a) => acc + a.uniformQty + a.capQty, 0) || 0;
+                              return (
+                                <button
+                                  onClick={() => router.push(`/dashboard/staff/assign?staffId=${staff.id}`)}
+                                  className={`text-xs inline-flex items-center gap-1.5 font-semibold hover:underline ${activeCount > 0 ? 'text-warning font-bold' : 'text-text-secondary'}`}
+                                >
+                                  <Shirt size={12} />
+                                  <span>{activeCount} active / {totalCount} total</span>
+                                </button>
+                              );
+                            })()}
+                          </td>
+                          <td className="py-3.5 px-5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="has-tooltip">
+                                <button 
+                                  className="p-1.5 hover:bg-primary/10 text-text-secondary hover:text-primary rounded-md transition-colors" 
+                                  onClick={() => router.push(`/dashboard/staff/assign?staffId=${staff.id}`)} 
+                                  type="button"
+                                >
+                                  <Shirt size={13} />
+                                </button>
+                                <span className="tooltip-box tooltip-left">Allocate uniforms to promoter</span>
+                              </div>
+                              <div className="has-tooltip">
+                                <button 
+                                  className="p-1.5 hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-md transition-colors" 
+                                  onClick={() => router.push(`/dashboard/staff/assign?editStaffId=${staff.id}`)} 
+                                  type="button"
+                                >
+                                  <Edit2 size={13} />
+                                </button>
+                                <span className="tooltip-box tooltip-left">Edit promoter details</span>
+                              </div>
+                              <div className="has-tooltip">
+                                <button 
+                                  className="p-1.5 hover:bg-danger/10 text-text-secondary hover:text-danger rounded-md transition-colors" 
+                                  onClick={() => handlePromoterDelete(staff.id)}
+                                  type="button"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                                <span className="tooltip-box tooltip-left">Delete promoter and records</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Return Remarks Modal Dialog */}
+      {isReturnModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-border w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-scale-up">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between bg-surface-elevated/20">
+              <h3 className="font-display font-extrabold text-base text-text-primary flex items-center gap-2">
+                <CheckCircle className="text-success" size={18} />
+                <span>Process Return / Mark Used</span>
+              </h3>
+              <button 
+                onClick={() => setIsReturnModalOpen(false)}
+                className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleReturnSubmit} className="p-5 flex flex-col gap-4">
+              {returnError && (
+                <div className="bg-danger/10 border border-danger/20 text-danger rounded-lg p-2.5 text-xs font-semibold text-center">
+                  {returnError}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-text-secondary uppercase">Promoter(s) Returning Assets</span>
+                <div className="flex flex-wrap gap-1.5 mt-1 max-h-24 overflow-y-auto">
+                  {returnPromoterNames.map((name, idx) => (
+                    <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-success/10 text-success border border-success/10">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-text-secondary">Return Remarks / Condition (Required)</label>
+                <textarea
+                  className="w-full bg-surface text-text-primary placeholder:text-text-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all h-24 resize-none"
+                  placeholder="e.g. Returned both yellow shirt and cap in perfect condition, disposable items used."
+                  value={returnNotes}
+                  onChange={(e) => setReturnNotes(e.target.value)}
+                  required
+                />
+              </div>
+
+              {returnAllocIds.length === 1 && (
+                <div className="flex flex-col gap-2 mt-2 bg-surface-elevated/10 p-3 rounded-lg border border-border/50">
+                  <span className="text-xs font-semibold text-text-secondary">Select Items Returning / Used:</span>
+                  <div className="flex flex-col gap-2 max-h-[150px] overflow-y-auto">
+                    {availableReturnItems.legacyUniform && (
+                      <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer hover:bg-surface-elevated p-1.5 rounded transition-colors">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
+                          checked={returnItemsState.legacyUniform}
+                          onChange={(e) => setReturnItemsState(prev => ({ ...prev, legacyUniform: e.target.checked }))}
+                        />
+                        <span>Legacy Uniform</span>
+                      </label>
+                    )}
+                    {availableReturnItems.legacyCap && (
+                      <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer hover:bg-surface-elevated p-1.5 rounded transition-colors">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
+                          checked={returnItemsState.legacyCap}
+                          onChange={(e) => setReturnItemsState(prev => ({ ...prev, legacyCap: e.target.checked }))}
+                        />
+                        <span>Legacy Cap</span>
+                      </label>
+                    )}
+                    {availableReturnItems.items.map(item => (
+                      <label key={item.id} className="flex items-center gap-2 text-sm text-text-primary cursor-pointer hover:bg-surface-elevated p-1.5 rounded transition-colors">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
+                          checked={returnItemsState.itemIds.includes(item.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setReturnItemsState(prev => ({ ...prev, itemIds: [...prev.itemIds, item.id] }));
+                            } else {
+                              setReturnItemsState(prev => ({ ...prev, itemIds: prev.itemIds.filter(id => id !== item.id) }));
+                            }
+                          }}
+                        />
+                        <span>{item.qty}x {item.type} (Size: {item.size})</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-border">
+                <button 
+                  type="button" 
+                  onClick={() => setIsReturnModalOpen(false)}
+                  className="px-4 py-2 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-xs font-semibold transition-all duration-200"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmittingReturn}
+                  className="px-4 py-2 bg-success hover:bg-success-hover disabled:bg-success/50 text-white font-semibold text-xs rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+                >
+                  {isSubmittingReturn && <Loader2 size={12} className="animate-spin" />}
+                  <span>Confirm Return / Mark Used</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Promoter Detail Modal */}
+      {selectedPromoter && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-border w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-scale-up">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between bg-surface-elevated/20 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                  {selectedPromoter.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="font-display font-extrabold text-base text-text-primary">{selectedPromoter.name}</h3>
+                  <span className="text-[10px] text-text-secondary mt-0.5 block">
+                    Shirt Size: <strong>{selectedPromoter.shirtSize || 'M'}</strong> | Phone: <strong>{selectedPromoter.phone || 'No contact'}</strong>
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedPromoter(null)}
+                className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 overflow-y-auto flex flex-col gap-5">
+              {/* Placement Card */}
+              <div className="bg-surface-elevated/40 border border-border rounded-xl p-4 flex justify-between items-center text-xs">
+                <div>
+                  <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider block">Current Store Placement</span>
+                  <strong className="text-text-primary text-sm mt-1 block">
+                    {selectedPromoter.store ? selectedPromoter.store.name : 'Unassigned / Not active'}
+                  </strong>
+                </div>
+                {selectedPromoter.store && (
+                  <span className="badge badge-success text-[10px] font-bold">Placed</span>
+                )}
+              </div>
+
+              {/* History Timeline */}
+              <div className="flex flex-col gap-3">
+                <h4 className="font-display font-bold text-xs text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                  <Inbox size={14} className="text-primary" />
+                  <span>Uniform Allocation History ({selectedPromoter.allocations?.length || 0})</span>
+                </h4>
+
+                <div className="flex flex-col gap-3">
+                  {!selectedPromoter.allocations || selectedPromoter.allocations.length === 0 ? (
+                    <div className="py-8 text-center text-xs text-text-muted border border-dashed border-border rounded-xl font-sans">
+                      No uniform allocations ever issued to this promoter.
+                    </div>
+                  ) : (
+                    selectedPromoter.allocations.map((alloc) => {
+                      const isFullyReturned = isAllocationFullyReturned(alloc);
+                      const items = getAllocatedItems(alloc);
+                      return (
+                        <div key={alloc.id} className="border border-border rounded-xl p-4 bg-surface hover:border-text-secondary/20 transition-all flex flex-col gap-3 text-xs">
+                          <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-2">
+                            <span className="font-mono text-text-secondary font-semibold">DN: {alloc.id}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-text-muted">{new Date(alloc.givenDate).toLocaleDateString('en-AE', { timeZone: 'Asia/Dubai' })}</span>
+                              {isFullyReturned ? (
+                                <span className="px-1.5 py-0.5 bg-success/10 text-success text-[9px] font-extrabold rounded-full uppercase">Closed</span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 bg-warning/10 text-warning text-[9px] font-extrabold rounded-full uppercase">Active</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <span className="text-[10px] font-bold text-text-muted uppercase block">Store Destination</span>
+                              <span className="font-semibold text-text-primary block mt-0.5">{alloc.store?.name || 'Unknown Store'}</span>
+                            </div>
+                            {alloc.supervisor && (
+                              <div>
+                                <span className="text-[10px] font-bold text-text-muted uppercase block">Supervisor</span>
+                                <span className="font-semibold text-text-primary block mt-0.5">{alloc.supervisor.name}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Items details inside the history row */}
+                          <div className="bg-surface-elevated/20 p-2.5 rounded-lg flex flex-col gap-1.5 border border-border/30">
+                            {alloc.uniformQty > 0 && (
+                              <div className="flex justify-between items-center text-[11px]">
+                                <span className="font-medium text-text-primary">{alloc.uniformQty}x Shirt (Legacy)</span>
+                                <span className={alloc.uniformReturned ? 'text-success font-bold' : 'text-warning font-bold'}>
+                                  {alloc.uniformReturned ? 'Returned' : 'Active'}
+                                </span>
+                              </div>
+                            )}
+                            {alloc.capQty > 0 && (
+                              <div className="flex justify-between items-center text-[11px]">
+                                <span className="font-medium text-text-primary">{alloc.capQty}x Cap (Legacy)</span>
+                                <span className={alloc.capReturned ? 'text-success font-bold' : 'text-warning font-bold'}>
+                                  {alloc.capReturned ? 'Returned' : 'Active'}
+                                </span>
+                              </div>
+                            )}
+                            {items.map((item, idx) => (
+                              <div key={item.id || idx} className="flex justify-between items-center text-[11px]">
+                                <span className="font-medium text-text-primary">{item.qty}x {item.type} (Size: {item.size})</span>
+                                <span className={item.returned ? 'text-success font-bold' : 'text-warning font-bold'}>
+                                  {item.returned ? (item.type?.toLowerCase().includes('disposable') ? 'Used' : 'Returned') : 'Active'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {alloc.notes && (
+                            <p className="text-[11px] text-text-secondary leading-relaxed bg-surface-elevated/30 p-2 rounded border border-border/20 italic">
+                              Remarks: {alloc.notes}
+                            </p>
+                          )}
+
+                          {/* Quick return button from timeline */}
+                          {!isFullyReturned && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPromoter(null);
+                                openSingleReturnModal({
+                                  ...alloc,
+                                  staffName: selectedPromoter.name,
+                                  staffShirtSize: selectedPromoter.shirtSize
+                                });
+                              }}
+                              className="self-end px-3 py-1.5 bg-success hover:bg-success-hover text-white rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
+                            >
+                              <CheckCircle size={11} />
+                              <span>Process Returns for DN {alloc.id}</span>
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-border bg-surface-elevated/20 flex justify-between items-center flex-shrink-0 font-sans">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedPromoter(null);
+                  router.push(`/dashboard/staff/assign?editStaffId=${selectedPromoter.id}`);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 border border-border bg-surface hover:bg-surface-elevated text-text-primary rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                <Edit2 size={13} />
+                <span>Edit Profile</span>
+              </button>
+              
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPromoter(null)}
+                  className="px-4 py-2 border border-border bg-surface hover:bg-surface-elevated text-text-secondary rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPromoter(null);
+                    router.push(`/dashboard/staff/assign?staffId=${selectedPromoter.id}`);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                >
+                  <Shirt size={13} />
+                  <span>Issue New Uniform</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmData.onConfirm}
+        type="confirm"
+        danger={confirmData.danger}
+        title={confirmData.title}
+        message={confirmData.message}
+        confirmLabel={confirmData.confirmLabel}
+      />
+    </div>
+  );
+}
+
