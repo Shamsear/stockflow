@@ -886,7 +886,7 @@ function InboundFormContent({ products, brands = [], stores = [], recentReceiver
       />
 
       {/* Global Form Configurations */}
-      <div className="bg-surface border border-border rounded-xl p-5 shadow-sm">
+      <div data-tour="inbound-form-container" className="bg-surface border border-border rounded-xl p-5 shadow-sm">
         <h3 className="font-display font-bold text-base text-text-primary flex items-center gap-2 pb-3 border-b border-border">
           <ArrowDownLeft size={18} className="text-success" />
           <span>Inbound Shipment Details</span>

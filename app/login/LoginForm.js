@@ -161,20 +161,6 @@ export default function LoginForm() {
         />
 
         <div className="relative z-10 w-full max-w-[380px] flex flex-col gap-5">
-          
-          {/* Mobile-only brand identity header */}
-          <div className="flex lg:hidden items-center justify-between gap-3 pb-3 border-b border-slate-100 mb-1">
-            <Link href="/" className="inline-flex items-center gap-2 group">
-              <Logo size={30} />
-            </Link>
-
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-[11px] text-slate-700 font-medium">
-              <span className="flex items-center gap-1"><FlagQatar className="w-3.5 h-2.5" /> QA</span>
-              <span className="text-slate-300">•</span>
-              <span className="flex items-center gap-1"><FlagUAE className="w-3.5 h-2.5" /> UAE</span>
-            </div>
-          </div>
-
           {/* Header */}
           <div className="flex flex-col items-center text-center gap-1.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-teal-50 border border-teal-200 text-brand-800 text-[10px] font-bold rounded-full tracking-wider uppercase">
