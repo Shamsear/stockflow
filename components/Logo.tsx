@@ -51,14 +51,14 @@ export default function Logo({
       </svg>
 
       {showWordmark && (
-        <div className="flex items-baseline tracking-tight font-sans">
-          <span className="text-xl font-extrabold text-navy-900 tracking-tight">
+        <div className="flex items-baseline tracking-tight font-sans shrink-0">
+          <span className="text-lg sm:text-xl font-extrabold text-navy-900 tracking-tight">
             Stock
           </span>
-          <span className="text-xl font-bold text-brand-700 tracking-tight">
+          <span className="text-lg sm:text-xl font-bold text-brand-700 tracking-tight">
             Flow
           </span>
-          <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800 bg-brand-50 border border-brand-100 rounded">
+          <span className="ml-1.5 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-brand-800 bg-brand-50 border border-brand-100 rounded">
             WMS
           </span>
         </div>

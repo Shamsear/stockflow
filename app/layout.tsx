@@ -3,6 +3,9 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import ThemeProvider from "@/components/ThemeProvider";
+import Navbar from "@/components/layout/Navbar";
+import MobileNav from "@/components/layout/MobileNav";
+import { Suspense } from "react";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -24,9 +27,15 @@ export const metadata: Metadata = {
     "StockFlow",
   ],
   icons: {
-    icon: "/logo-icon.svg",
-    shortcut: "/logo-icon.svg",
-    apple: "/logo-icon.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/logo-icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   openGraph: {
     title: "StockFlow | Tailor-Made Warehouse Management (Qatar & UAE)",
@@ -87,7 +96,11 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen flex flex-col overflow-x-hidden bg-[#F8FAFC] text-slate-900 selection:bg-teal-100 selection:text-teal-900">
         <Providers>
           <ThemeProvider>
+            <Suspense fallback={null}>
+              <Navbar />
+            </Suspense>
             {children}
+            <MobileNav />
           </ThemeProvider>
         </Providers>
       </body>

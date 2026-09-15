@@ -48,7 +48,7 @@ export default function Hero() {
   ];
 
   return (
-    <section className="relative min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] flex flex-col justify-center py-6 sm:py-8 lg:py-10 bg-gradient-to-b from-slate-50/80 via-white to-slate-50/50 border-b border-slate-200/80">
+    <section className="relative min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-2rem)] flex flex-col justify-center pt-6 pb-10 sm:pt-8 sm:pb-12 md:pt-28 md:pb-16 bg-gradient-to-b from-slate-50/80 via-white to-slate-50/50 border-b border-slate-200/80">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-center max-w-3xl mx-auto">
           {/* Eyebrow */}

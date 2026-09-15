@@ -23,24 +23,7 @@ export default function GlobalErrorPage({
     );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-800">
-      {/* Top Header */}
-      <header className="w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Logo size={28} />
-          </Link>
-          <a
-            href={whatsAppUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
-          >
-            <MessageCircle className="w-3.5 h-3.5 fill-current" />
-            <span>Emergency Support</span>
-          </a>
-        </div>
-      </header>
+    <div className="min-h-[80vh] flex flex-col justify-center items-center text-slate-800 p-4 sm:p-6 pt-20 md:pt-28 pb-12">
 
       {/* Error Body */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6">

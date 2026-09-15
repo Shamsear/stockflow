@@ -123,7 +123,7 @@ export default function BrandPortalClient({ brand }) {
   const groupedLogs = getGroupedTransactions(paginatedTransactions);
 
   return (
-    <div className="min-h-[100dvh] bg-background text-text-primary py-8 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-[100dvh] bg-background text-text-primary pt-8 md:pt-24 pb-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
         
         {/* Portal Branding Header */}

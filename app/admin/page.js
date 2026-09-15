@@ -13,7 +13,7 @@ export default async function AdminPage() {
   const analytics = await getAdminAnalytics();
 
   return (
-    <div className="min-h-screen bg-background text-text-primary">
+    <div className="min-h-screen bg-background text-text-primary pt-8 md:pt-24 pb-12">
       <AdminAnalyticsClient initialData={analytics} />
     </div>
   );
