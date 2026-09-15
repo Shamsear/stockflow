@@ -26,7 +26,8 @@ const TOUR_STEPS = [
   {
     id: 'overview',
     route: '/dashboard',
-    targetSelector: '[data-tour="nav-inbound"]',
+    targetSelector: '[data-tour="dashboard-stats-grid"]',
+    fallbackSelector: '[data-tour="nav-inbound"]',
     stepNumber: '02',
     title: 'Central Command Center',
     pageOverviewTitle: 'Central Command Center',
@@ -40,7 +41,8 @@ const TOUR_STEPS = [
     actionRequired: 'Click [Inbound (Receive)] in sidebar',
     actionInstruction: 'Click Inbound highlighted in the sidebar to open dock container receiving.',
     explanation: 'Let us now record an incoming supplier container shipment at the receiving dock.',
-    nextRoute: '/dashboard/inbound'
+    nextRoute: '/dashboard/inbound',
+    nextStepTitle: 'Dock Receiving'
   },
   {
     id: 'inbound_list',
@@ -59,12 +61,14 @@ const TOUR_STEPS = [
     actionRequired: 'Click [+ New Inbound Receipt]',
     actionInstruction: 'Click the New Inbound button highlighted on the page to open the intake form.',
     explanation: 'Opening the intake form allows clerks to log container items, verify barcodes, and record batch expiry dates.',
-    nextRoute: '/dashboard/inbound/new'
+    nextRoute: '/dashboard/inbound/new',
+    nextStepTitle: 'Intake Form'
   },
   {
     id: 'inbound_new',
     route: '/dashboard/inbound/new',
-    targetSelector: '[data-tour="nav-expiry"]',
+    targetSelector: '[data-tour="inbound-form-container"]',
+    fallbackSelector: '[data-tour="nav-expiry"]',
     stepNumber: '04',
     title: 'Barcode & Expiry Intake',
     pageOverviewTitle: 'Barcode & Batch Expiry Capture Form',
@@ -78,12 +82,14 @@ const TOUR_STEPS = [
     actionRequired: 'Click [Expiry Tracking] in sidebar',
     actionInstruction: 'Click Expiry Tracking highlighted in the sidebar to review shelf-life protection.',
     explanation: 'Next, see how StockFlow protects your business from costly hypermarket rejection penalties.',
-    nextRoute: '/dashboard/expiry'
+    nextRoute: '/dashboard/expiry',
+    nextStepTitle: 'Expiry Tracking'
   },
   {
     id: 'fefo_expiry',
     route: '/dashboard/expiry',
-    targetSelector: '[data-tour="nav-outbound"]',
+    targetSelector: '[data-tour="fefo-status-cards"]',
+    fallbackSelector: '[data-tour="nav-outbound"]',
     stepNumber: '05',
     title: 'FEFO Shelf-Life Intelligence',
     pageOverviewTitle: 'FEFO Expiry & Shelf-Life Protection',
@@ -97,7 +103,8 @@ const TOUR_STEPS = [
     actionRequired: 'Click [Outbound (Dispatch)] in sidebar',
     actionInstruction: 'Click Outbound Dispatch highlighted in the sidebar to open retail picking.',
     explanation: 'Now let us pick stock and generate an official delivery slip for a hypermarket order.',
-    nextRoute: '/dashboard/outbound'
+    nextRoute: '/dashboard/outbound',
+    nextStepTitle: 'Outbound Dispatch'
   },
   {
     id: 'outbound_dispatch',
@@ -116,7 +123,8 @@ const TOUR_STEPS = [
     actionRequired: 'Click [Grouped Delivery Notes] tab',
     actionInstruction: 'Click the tab highlighted above the dispatch table.',
     explanation: 'Switch to Grouped Delivery Notes to access official store delivery slips.',
-    nextRoute: '/dashboard/outbound?tab=delivery_notes'
+    nextRoute: '/dashboard/outbound?tab=delivery_notes',
+    nextStepTitle: 'Delivery Notes'
   },
   {
     id: 'delivery_notes',
@@ -135,7 +143,8 @@ const TOUR_STEPS = [
     actionRequired: 'Click [View PDF] on delivery slip',
     actionInstruction: 'Click the View PDF button highlighted on the first dispatch record.',
     explanation: 'Click View PDF to inspect the exact document inside our embedded modal.',
-    nextRoute: null
+    nextRoute: null,
+    nextStepTitle: 'POD Preview'
   },
   {
     id: 'pdf_modal',
@@ -154,12 +163,14 @@ const TOUR_STEPS = [
     actionRequired: 'Click [Continue to Client Returns]',
     actionInstruction: 'Click the button in the bottom right of the modal to continue.',
     explanation: 'Next, see how store returns and damaged goods are isolated.',
-    nextRoute: '/dashboard/client-returns'
+    nextRoute: '/dashboard/client-returns',
+    nextStepTitle: 'Client Returns'
   },
   {
     id: 'client_returns',
     route: '/dashboard/client-returns',
-    targetSelector: '[data-tour="nav-reports"]',
+    targetSelector: '[data-tour="client-returns-banner"]',
+    fallbackSelector: '[data-tour="nav-reports"]',
     stepNumber: '09',
     title: 'Client Returns & Damage Quarantine',
     pageOverviewTitle: 'Client Returns & Damage Quarantine',
@@ -173,7 +184,8 @@ const TOUR_STEPS = [
     actionRequired: 'Click [Reports] in sidebar',
     actionInstruction: 'Click Reports highlighted in the sidebar to review executive stock analytics.',
     explanation: 'Finally, review executive multi-brand stock reconciliation.',
-    nextRoute: '/dashboard/reports'
+    nextRoute: '/dashboard/reports',
+    nextStepTitle: 'Executive Reports'
   },
   {
     id: 'reports_export',
@@ -192,7 +204,8 @@ const TOUR_STEPS = [
     actionRequired: 'Click [Export to Excel]',
     actionInstruction: 'Click the Export button highlighted above to download the live multi-brand stock ledger.',
     explanation: 'Exporting formatted Excel spreadsheets completes your live tour walkthrough.',
-    nextRoute: null
+    nextRoute: null,
+    nextStepTitle: null
   }
 ];
 
