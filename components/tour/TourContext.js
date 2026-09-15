@@ -222,6 +222,8 @@ export function TourProvider({ children }) {
 
     if (targetEl) {
       const rect = targetEl.getBoundingClientRect();
+      const style = window.getComputedStyle(targetEl);
+      const computedRadius = style.borderRadius || '12px';
       // Scroll into view if offscreen
       if (rect.top < 60 || rect.bottom > window.innerHeight) {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -230,7 +232,8 @@ export function TourProvider({ children }) {
         top: rect.top + window.scrollY,
         left: rect.left + window.scrollX,
         width: rect.width,
-        height: rect.height
+        height: rect.height,
+        borderRadius: computedRadius
       });
     } else {
       setTargetRect(null);

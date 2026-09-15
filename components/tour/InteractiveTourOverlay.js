@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useTour } from './TourContext';
 
 export default function InteractiveTourOverlay() {
-  const { isTourActive, targetRect } = useTour();
+  const { isTourActive, targetRect, isPdfModalOpen } = useTour();
   const [viewport, setViewport] = useState({ width: 0, height: 0, scrollY: 0, scrollX: 0 });
 
   useEffect(() => {
@@ -26,10 +26,28 @@ export default function InteractiveTourOverlay() {
     };
   }, []);
 
-  if (!isTourActive) return null;
+  // Compute border-radius in pixels so highlight frame is concentric with target element
+  const radiusPx = useMemo(() => {
+    if (!targetRect?.borderRadius) return 14;
+    const str = targetRect.borderRadius;
+    if (str.includes('9999px') || str.includes('50%')) return 9999;
+    const pxMatch = str.match(/([\d.]+)px/);
+    if (pxMatch) {
+      return Math.min(48, Math.round(parseFloat(pxMatch[1]) + 4));
+    }
+    const remMatch = str.match(/([\d.]+)rem/);
+    if (remMatch) {
+      return Math.min(48, Math.round(parseFloat(remMatch[1]) * 16 + 4));
+    }
+    return 14;
+  }, [targetRect?.borderRadius]);
 
-  // Calculate coordinates relative to viewport
-  const padding = 8;
+  if (!isTourActive) return null;
+  // If delivery note modal is open, suppress spotlight overlay
+  if (isPdfModalOpen) return null;
+
+  // Precision padding: 4px tight hugging (no oversized gaping margin)
+  const padding = 4;
   const rect = targetRect
     ? {
         top: Math.max(0, targetRect.top - viewport.scrollY - padding),
@@ -41,7 +59,7 @@ export default function InteractiveTourOverlay() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[80] transition-opacity duration-300">
-      {/* SVG Mask Cutout */}
+      {/* SVG Mask Cutout with Concentric Rounded Rect */}
       {rect && rect.width > 0 && rect.height > 0 ? (
         <svg
           className="fixed inset-0 w-full h-full pointer-events-none"
@@ -59,19 +77,19 @@ export default function InteractiveTourOverlay() {
                 y={rect.top}
                 width={rect.width}
                 height={rect.height}
-                rx="10"
-                ry="10"
+                rx={radiusPx}
+                ry={radiusPx}
                 fill="#000000"
               />
             </mask>
           </defs>
-          {/* Dark backdrop with mask applied */}
+          {/* Subtle, cinema-grade dark slate vignette */}
           <rect
             x="0"
             y="0"
             width="100%"
             height="100%"
-            fill="rgba(15, 23, 42, 0.62)"
+            fill="rgba(15, 23, 42, 0.58)"
             mask="url(#tour-spotlight-cutout)"
           />
         </svg>
@@ -79,17 +97,40 @@ export default function InteractiveTourOverlay() {
         <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-[1px] pointer-events-none transition-opacity duration-300" />
       )}
 
-      {/* Target Focus Ring */}
+      {/* Target Highlight Container: Precision Luminous Frame */}
       {rect && rect.width > 0 && rect.height > 0 && (
         <div
-          className="fixed pointer-events-none z-[81] transition-all duration-300 rounded-lg border-2 border-primary ring-4 ring-primary/30 shadow-lg animate-pulse"
+          className="fixed pointer-events-none z-[85] transition-all duration-200"
           style={{
             top: `${rect.top}px`,
             left: `${rect.left}px`,
             width: `${rect.width}px`,
             height: `${rect.height}px`,
+            borderRadius: `${radiusPx}px`,
           }}
-        />
+        >
+          {/* Crisp Primary Border with Dual-Tier Ambient Glow */}
+          <div
+            className="absolute inset-0 rounded-[inherit] border-2 border-emerald-500 dark:border-emerald-400 pointer-events-none transition-all duration-300"
+            style={{
+              boxShadow: '0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 20px -2px rgba(16, 185, 129, 0.35), inset 0 0 10px rgba(16, 185, 129, 0.08)',
+            }}
+          />
+
+          {/* Gentle Breathing Aura Ring */}
+          <div
+            className="absolute -inset-1 rounded-[inherit] border border-emerald-400/40 pointer-events-none animate-pulse"
+            style={{
+              animationDuration: '2.4s',
+            }}
+          />
+
+          {/* Precision Micro Corner Reticles */}
+          <div className="absolute -top-1 -right-1 flex h-2.5 w-2.5 pointer-events-none">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white dark:border-slate-900 shadow-sm" />
+          </div>
+        </div>
       )}
     </div>
   );
