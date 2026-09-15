@@ -57,13 +57,14 @@ export default function InteractiveTourOverlay() {
   const currentCleanPath = pathname ? pathname.split('?')[0] : '';
   const isTourPage = currentCleanPath === '/login' || currentCleanPath.startsWith('/dashboard');
 
-  if (!isTourActive || !isTourPage || isPdfModalOpen || !targetRect) return null;
+  if (!isTourActive || !isTourPage || isPdfModalOpen) return null;
 
   // Precision padding: 4px tight hugging
   const padding = 4;
   
   // Use pure viewport coordinates directly from targetRect
-  const rect = targetRect && targetRect.width > 0 && targetRect.height > 0
+  const hasValidTarget = Boolean(targetRect && targetRect.width > 0 && targetRect.height > 0);
+  const rect = hasValidTarget
     ? {
         top: Math.round(targetRect.top - padding),
         left: Math.round(targetRect.left - padding),
@@ -74,7 +75,7 @@ export default function InteractiveTourOverlay() {
     : null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[80] transition-opacity duration-300">
+    <div className={`fixed inset-0 pointer-events-none z-[80] transition-opacity duration-300 ${hasValidTarget ? 'opacity-100' : 'opacity-0'}`}>
       {/* SVG Mask Cutout with Concentric Rounded Rect */}
       {rect && !rect.isOffscreen && rect.width > 0 && rect.height > 0 ? (
         <svg

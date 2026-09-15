@@ -210,6 +210,8 @@ export function TourProvider({ children }) {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [pdfModalData, setPdfModalData] = useState(null);
   const [targetRect, setTargetRect] = useState(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [navigatingTitle, setNavigatingTitle] = useState('');
   const [sessionId, setSessionId] = useState(null);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [visitorProfile, setVisitorProfile] = useState({ name: '', company: '', location: '' });
@@ -332,6 +334,18 @@ export function TourProvider({ children }) {
   // 3. Keep step synced with route ONLY when user manually navigates to a different module
   const prevPathnameRef = useRef(pathname);
 
+  // Prefetch the upcoming step's page route for instant, zero-lag transitions
+  useEffect(() => {
+    if (!isTourActive || !currentStep) return;
+    const nextSt = TOUR_STEPS[currentStepIndex + 1];
+    if (nextSt?.route) {
+      try {
+        const cleanRoute = nextSt.route.split('?')[0];
+        router.prefetch(cleanRoute);
+      } catch {}
+    }
+  }, [currentStep, currentStepIndex, isTourActive, router]);
+
   useEffect(() => {
     if (!isTourActive) {
       prevPathnameRef.current = pathname;
@@ -348,12 +362,18 @@ export function TourProvider({ children }) {
     const stepCleanPath = currentStep?.route ? currentStep.route.split('?')[0] : '';
 
     // If current step already matches the new pathname, don't change step
-    if (currentCleanPath === stepCleanPath) return;
+    if (currentCleanPath === stepCleanPath) {
+      setIsNavigating(false);
+      setNavigatingTitle('');
+      return;
+    }
 
     // Otherwise, user navigated manually to a different route.
     const matchingIdx = TOUR_STEPS.findIndex(s => s.route && s.route.split('?')[0] === currentCleanPath);
     if (matchingIdx !== -1) {
       setCurrentStepIndex(matchingIdx);
+      setIsNavigating(false);
+      setNavigatingTitle('');
     }
   }, [pathname, isTourActive, currentStep]);
 
@@ -405,16 +425,30 @@ export function TourProvider({ children }) {
 
         const computedRadius = style.borderRadius || '12px';
 
-        // PURE VIEWPORT COORDINATES: matches position: fixed with 1:1 pixel precision
-        setTargetRect({
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height,
-          bottom: rect.bottom,
-          right: rect.right,
-          borderRadius: computedRadius
+        // PURE VIEWPORT COORDINATES: Avoid setting state if identical to prevent constant re-renders & flickering!
+        setTargetRect(prev => {
+          if (
+            prev &&
+            Math.abs(prev.top - rect.top) < 0.5 &&
+            Math.abs(prev.left - rect.left) < 0.5 &&
+            Math.abs(prev.width - rect.width) < 0.5 &&
+            Math.abs(prev.height - rect.height) < 0.5 &&
+            prev.borderRadius === computedRadius
+          ) {
+            return prev; // Same reference -> NO re-render!
+          }
+          return {
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+            bottom: rect.bottom,
+            right: rect.right,
+            borderRadius: computedRadius
+          };
         });
+        setIsNavigating(false);
+        setNavigatingTitle('');
         return true;
       }
     }
@@ -469,12 +503,20 @@ export function TourProvider({ children }) {
       };
     }
 
-    // 2. Continuous high-speed polling while Next.js loads async page components & tables
+    // 2. High-speed polling while Next.js loads async page components & tables
     const pollTarget = () => {
       if (isCancelled) return;
       const found = updateTargetRect();
-      if (found || Date.now() - startTime > 4000) {
-        if (checkInterval) clearInterval(checkInterval);
+      if (found) {
+        if (checkInterval) {
+          clearInterval(checkInterval);
+          checkInterval = null;
+        }
+      } else if (Date.now() - startTime > 3000) {
+        if (checkInterval) {
+          clearInterval(checkInterval);
+          checkInterval = null;
+        }
       }
     };
 
@@ -654,6 +696,8 @@ export function TourProvider({ children }) {
       setCurrentStepIndex(nextIdx);
 
       if (nextSt.route && pathname !== nextSt.route.split('?')[0]) {
+        setIsNavigating(true);
+        setNavigatingTitle(nextSt.title || '');
         router.push(nextSt.route);
       }
     } else {
@@ -676,6 +720,8 @@ export function TourProvider({ children }) {
       setCurrentStepIndex(prevIdx);
 
       if (prevSt.route && pathname !== prevSt.route.split('?')[0]) {
+        setIsNavigating(true);
+        setNavigatingTitle(prevSt.title || '');
         router.push(prevSt.route);
       }
     }
@@ -720,6 +766,8 @@ export function TourProvider({ children }) {
     sendStepTelemetry('pdf_modal', 'completed');
     setCompletedSteps(prev => [...new Set([...prev, 'pdf_modal'])]);
     setCurrentStepIndex(8); // Step 09: client_returns
+    setIsNavigating(true);
+    setNavigatingTitle(TOUR_STEPS[8]?.title || 'Client Returns');
     router.push('/dashboard/client-returns');
   }, [router, sendStepTelemetry]);
 
@@ -842,6 +890,8 @@ export function TourProvider({ children }) {
         isPdfModalOpen,
         pdfModalData,
         targetRect,
+        isNavigating,
+        navigatingTitle,
         sessionId,
         completedSteps,
         visitorProfile,
@@ -879,6 +929,8 @@ export function useTour() {
       currentStep: null,
       currentStepIndex: 0,
       isTourActive: false,
+      isNavigating: false,
+      navigatingTitle: '',
       startTour: () => {},
       openPdfModal: () => {},
       closePdfModal: () => {},

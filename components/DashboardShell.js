@@ -38,9 +38,9 @@ export default function DashboardShell({ user, children }) {
     // Clear demo access cookie
     document.cookie = "stockflow_demo_access=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
-    // Show a brief message before redirecting
+    // Show a brief message before redirecting to home page
     setTimeout(() => {
-      signOut({ callbackUrl: '/login' });
+      signOut({ callbackUrl: '/' });
     }, 800); // Give user time to see the "Signing out..." message
   };
 

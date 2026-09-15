@@ -38,6 +38,8 @@ export default function AICopilotWidget() {
     currentStep,
     currentStepIndex,
     isTourActive,
+    isNavigating,
+    navigatingTitle,
     isMinimized,
     isChatOpen,
     isPdfModalOpen,
@@ -172,14 +174,25 @@ export default function AICopilotWidget() {
       arrowOffset = Math.max(20, Math.min(popoverH - 20, tCenterY - clampedTop));
     }
 
-    setCoords({
-      top: clampedTop,
-      left: clampedLeft,
-      placement,
-      arrowOffset
+    setCoords(prev => {
+      if (
+        prev &&
+        Math.abs(prev.top - clampedTop) < 0.5 &&
+        Math.abs(prev.left - clampedLeft) < 0.5 &&
+        prev.placement === placement &&
+        Math.abs(prev.arrowOffset - arrowOffset) < 0.5
+      ) {
+        return prev; // Same reference -> NO re-render!
+      }
+      return {
+        top: clampedTop,
+        left: clampedLeft,
+        placement,
+        arrowOffset
+      };
     });
     setIsPositionReady(true);
-  }, [targetRect, isOnboardingOpen, pathname]);
+  }, [targetRect, isOnboardingOpen]);
 
   // High-Performance Layout Settling & rAF Scroll Tracking
   useEffect(() => {
@@ -581,8 +594,20 @@ export default function AICopilotWidget() {
               {currentStep.pageOverview || currentStep.explanation}
             </p>
 
-            {/* Action Pill Callout */}
-            {currentStep.actionRequired && (
+            {/* Navigation Loading or Action Pill Callout */}
+            {isNavigating ? (
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-200 animate-pulse">
+                <Loader2 size={15} className="animate-spin text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <div className="text-xs leading-snug">
+                  <span className="font-bold block">
+                    Loading {navigatingTitle || currentStep.title}...
+                  </span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                    Preparing live warehouse view, please wait...
+                  </span>
+                </div>
+              </div>
+            ) : currentStep.actionRequired ? (
               <div className="flex items-start gap-2 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
                 <MousePointerClick size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <div className="text-xs leading-snug">
@@ -594,7 +619,7 @@ export default function AICopilotWidget() {
                   </span>
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Subtle Contextual Note */}
             {currentStep.suggestion && (
@@ -619,9 +644,30 @@ export default function AICopilotWidget() {
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    disabled={isNavigating}
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
                   >
                     Back
+                  </button>
+                )}
+                {currentStepIndex < steps.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={isNavigating}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50"
+                  >
+                    {isNavigating ? (
+                      <>
+                        <Loader2 size={12} className="animate-spin" />
+                        <span>Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Next</span>
+                        <ChevronRight size={13} />
+                      </>
+                    )}
                   </button>
                 )}
               </div>
