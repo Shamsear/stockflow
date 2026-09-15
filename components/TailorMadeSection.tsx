@@ -143,28 +143,30 @@ export default function TailorMadeSection() {
                 className="grid grid-cols-1 md:grid-cols-12 text-sm transition-colors hover:bg-slate-50/50"
               >
                 {/* Feature Name */}
-                <div className="md:col-span-4 p-4 font-bold text-slate-900 flex items-center bg-slate-100/60 md:bg-transparent border-b md:border-b-0 border-slate-200">
+                <div className="md:col-span-4 p-3.5 sm:p-4 font-bold text-slate-900 flex items-center bg-slate-100/70 md:bg-transparent border-b md:border-b-0 border-slate-200">
                   <span className="text-xs md:text-sm uppercase tracking-wide md:normal-case md:tracking-normal text-brand-900 md:text-slate-900">
                     {item.feature}
                   </span>
                 </div>
 
                 {/* Off The Shelf */}
-                <div className="md:col-span-4 p-4 text-slate-600 md:border-l border-slate-200 flex items-start gap-2.5 bg-rose-50/20 md:bg-transparent border-b md:border-b-0 border-slate-100">
-                  <div className="md:hidden text-[10px] font-bold uppercase tracking-wider text-rose-600 shrink-0 w-24">
-                    Rigid ERP:
+                <div className="md:col-span-4 p-3.5 sm:p-4 text-slate-600 md:border-l border-slate-200 flex flex-col sm:flex-row items-start gap-1.5 sm:gap-2.5 bg-rose-50/20 md:bg-transparent border-b md:border-b-0 border-slate-100">
+                  <div className="md:hidden inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200/80 mb-0.5">
+                    <X className="w-3 h-3 text-rose-600" />
+                    <span>Rigid ERP</span>
                   </div>
                   <X className="hidden md:block w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                  <span className="leading-relaxed text-xs sm:text-sm">{item.offTheShelf}</span>
+                  <span className="leading-relaxed text-xs sm:text-sm text-slate-600">{item.offTheShelf}</span>
                 </div>
 
                 {/* StockFlow */}
-                <div className="md:col-span-4 p-4 bg-teal-50/30 text-slate-900 md:border-l border-teal-200 flex items-start gap-2.5 font-medium">
-                  <div className="md:hidden text-[10px] font-bold uppercase tracking-wider text-teal-800 shrink-0 w-24">
-                    StockFlow:
+                <div className="md:col-span-4 p-3.5 sm:p-4 bg-teal-50/30 text-slate-900 md:border-l border-teal-200 flex flex-col sm:flex-row items-start gap-1.5 sm:gap-2.5 font-medium">
+                  <div className="md:hidden inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-brand-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200/80 mb-0.5">
+                    <Check className="w-3 h-3 text-brand-700" />
+                    <span>StockFlow</span>
                   </div>
                   <Check className="hidden md:block w-4 h-4 text-brand-700 shrink-0 mt-0.5" />
-                  <span className="leading-relaxed text-xs sm:text-sm">{item.stockflow}</span>
+                  <span className="leading-relaxed text-xs sm:text-sm text-slate-900">{item.stockflow}</span>
                 </div>
               </div>
             ))}
@@ -172,16 +174,16 @@ export default function TailorMadeSection() {
         </div>
 
         {/* Tailor-Made Callout Banner */}
-        <div className="mt-8 max-w-6xl mx-auto p-6 sm:p-8 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
-          <div className="flex items-center gap-4 text-left">
-            <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-400/20 flex items-center justify-center shrink-0 text-teal-400">
-              <Zap className="w-6 h-6" />
+        <div className="mt-8 max-w-6xl mx-auto p-5 sm:p-8 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-6 shadow-sm">
+          <div className="flex items-center gap-3.5 sm:gap-4 text-left">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-teal-500/10 border border-teal-400/20 flex items-center justify-center shrink-0 text-teal-400">
+              <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-base sm:text-lg">
+              <h3 className="font-bold text-sm sm:text-base md:text-lg">
                 Have specific tracking criteria or unique items?
               </h3>
-              <p className="text-sm text-slate-300 mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
                 Tell us what you need to track on WhatsApp. We build your dashboard around your exact workflow in days.
               </p>
             </div>
@@ -191,10 +193,10 @@ export default function TailorMadeSection() {
             href="https://wa.me/97472360418?text=Hi%20StockFlow%20team,%20we%20have%20specific%20warehouse%20tracking%20rules%20(batches,%20expiry,%20custom%20fields)%20and%20want%20to%20discuss%20a%20tailor-made%20setup."
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm transition-all shadow-sm inline-flex items-center gap-2"
+            className="w-full sm:w-auto shrink-0 justify-center px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm transition-all shadow-sm inline-flex items-center gap-2 text-center"
           >
             <span>Discuss Custom Setup</span>
-            <Check className="w-4 h-4" />
+            <Check className="w-4 h-4 shrink-0" />
           </a>
         </div>
       </div>

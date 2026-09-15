@@ -298,12 +298,12 @@ export default function AdminAnalyticsClient({ initialData }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <button
             type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
           >
             <RotateCcw size={14} className={isRefreshing ? 'animate-spin text-primary' : ''} />
             <span>Refresh</span>
@@ -313,13 +313,13 @@ export default function AdminAnalyticsClient({ initialData }) {
             data={excelData}
             columns={excelColumns}
             filename="StockFlow-Visitor-Analytics"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
           />
 
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-xs font-semibold transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-xs font-semibold transition-colors"
           >
             <Download size={14} />
             <span>CSV</span>
@@ -330,7 +330,7 @@ export default function AdminAnalyticsClient({ initialData }) {
               type="button"
               onClick={handleClearAllSessions}
               disabled={isClearingAll}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
               title="Clear all demo sessions"
             >
               {isClearingAll ? (
@@ -547,7 +547,7 @@ export default function AdminAnalyticsClient({ initialData }) {
             </div>
 
             {/* Status Filter Tabs (Minimal outline buttons, no rounded-full badges) */}
-            <div className="flex items-center border border-border rounded-lg overflow-hidden p-0.5 bg-surface">
+            <div className="flex items-center border border-border rounded-lg overflow-x-auto no-scrollbar p-0.5 bg-surface max-w-full">
               {[
                 { key: 'ALL', label: 'All' },
                 { key: 'COMPLETED', label: 'Completed Tour' },
@@ -558,7 +558,7 @@ export default function AdminAnalyticsClient({ initialData }) {
                   key={tab.key}
                   type="button"
                   onClick={() => setStatusFilter(tab.key)}
-                  className={`px-2.5 py-1 text-xs font-medium transition-colors rounded-md ${
+                  className={`px-2.5 py-1 text-xs font-medium transition-colors rounded-md whitespace-nowrap shrink-0 ${
                     statusFilter === tab.key
                       ? 'bg-surface-elevated text-text-primary font-bold'
                       : 'text-text-secondary hover:text-text-primary'

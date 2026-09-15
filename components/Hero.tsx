@@ -10,52 +10,52 @@ export default function Hero() {
     encodeURIComponent("Hi StockFlow team! I'd like to discuss a custom warehouse dashboard setup for our operations.");
 
   return (
-    <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden border-b border-slate-200/60 bg-gradient-to-b from-slate-50 via-white to-slate-50/50">
+    <section className="relative pt-8 pb-12 sm:pt-12 sm:pb-16 md:pt-20 md:pb-24 overflow-hidden border-b border-slate-200/60 bg-gradient-to-b from-slate-50 via-white to-slate-50/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           {/* Eyebrow Chip */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-50 border border-teal-200/70 text-brand-800 text-xs sm:text-sm font-semibold mb-6">
-            <span className="flex h-2 w-2 rounded-full bg-brand-600"></span>
-            <span>BUILT FOR GCC WAREHOUSES, DISTRIBUTORS & TRADERS</span>
+          <div className="inline-flex max-w-full items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-teal-50 border border-teal-200/70 text-brand-800 text-[11px] sm:text-xs md:text-sm font-semibold mb-4 sm:mb-6 text-center leading-normal">
+            <span className="flex h-2 w-2 rounded-full bg-brand-600 shrink-0"></span>
+            <span className="truncate sm:whitespace-normal">BUILT FOR GCC WAREHOUSES, DISTRIBUTORS & TRADERS</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-navy-900 tracking-tight leading-[1.15] mb-6">
+          <h1 className="text-2xl xs:text-3xl sm:text-5xl lg:text-6xl font-extrabold text-navy-900 tracking-tight leading-[1.15] mb-4 sm:mb-6">
             Tired of Spreadsheet Chaos in Your Warehouse?
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-slate-600 font-normal leading-relaxed max-w-3xl mx-auto mb-6">
+          <p className="text-sm sm:text-lg md:text-xl text-slate-600 font-normal leading-relaxed max-w-3xl mx-auto mb-6">
             Stop losing track of missing pallets, expired stock, and delivery slips buried in WhatsApp chats. 
             We build a <span className="font-semibold text-navy-900 underline decoration-teal-500/50 decoration-2 underline-offset-4">custom real-time dashboard</span> tailor-made around your exact inventory rules, batch tracking, expiry dates, and warehouse floor plan.
           </p>
 
           {/* Core Tracking Capability Chips (Pure SVG Icons, Zero Emojis) */}
-          <div className="flex flex-wrap items-center justify-center gap-2 max-w-3xl mx-auto mb-10 text-xs text-slate-700">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-subtle font-medium">
-              <Package className="w-3.5 h-3.5 text-brand-700" />
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 max-w-3xl mx-auto mb-8 sm:mb-10 text-[11px] sm:text-xs text-slate-700">
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white border border-slate-200 shadow-subtle font-medium">
+              <Package className="w-3.5 h-3.5 text-brand-700 shrink-0" />
               <span>Live Stock Levels</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-subtle font-medium">
-              <Clock className="w-3.5 h-3.5 text-amber-600" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white border border-slate-200 shadow-subtle font-medium">
+              <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
               <span>Expiry Tracking (FEFO)</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-subtle font-medium">
-              <Tag className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white border border-slate-200 shadow-subtle font-medium">
+              <Tag className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               <span>Batch & Lot Numbers</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-subtle font-medium">
-              <MapPin className="w-3.5 h-3.5 text-rose-500" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white border border-slate-200 shadow-subtle font-medium">
+              <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
               <span>Bin & Rack Coordinates</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-brand-900 font-bold">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-brand-700" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-teal-50 border border-teal-200 text-brand-900 font-bold">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-brand-700 shrink-0" />
               <span>100% Tailor-Made For You</span>
             </span>
           </div>
 
           {/* The High-Converting Tailored Demo Offer Card */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-card text-left max-w-3xl mx-auto mb-10 relative">
+          <div className="p-4 sm:p-6 md:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-card text-left max-w-3xl mx-auto mb-8 sm:mb-10 relative">
             <div className="absolute -top-3.5 right-4 sm:right-6 px-3 py-1 bg-brand-700 text-white text-[11px] font-bold uppercase tracking-wider rounded-full shadow-sm">
               Tailored Walkthrough
             </div>
@@ -81,29 +81,29 @@ export default function Hero() {
                 href={whatsAppUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="sm:col-span-8 flex items-center justify-between px-5 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-base transition-all shadow hover:shadow-md group cursor-pointer"
+                className="sm:col-span-7 md:col-span-8 flex items-center justify-between p-3.5 sm:px-5 sm:py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-base transition-all shadow hover:shadow-md group cursor-pointer"
               >
-                <div className="flex items-center gap-3">
-                  <MessageCircle className="w-6 h-6 fill-current shrink-0 transition-transform group-hover:scale-110" />
-                  <div className="text-left leading-tight">
-                    <div className="font-bold text-base sm:text-lg">Message Us on WhatsApp</div>
-                    <div className="text-xs text-emerald-100 font-mono font-medium flex flex-wrap items-center gap-1.5 mt-0.5">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 fill-current shrink-0 transition-transform group-hover:scale-110" />
+                  <div className="text-left leading-tight min-w-0">
+                    <div className="font-bold text-sm sm:text-base md:text-lg truncate">Message Us on WhatsApp</div>
+                    <div className="text-[11px] sm:text-xs text-emerald-100 font-mono font-medium flex flex-wrap items-center gap-1 sm:gap-1.5 mt-0.5">
                       <span>+974 7236 0418</span>
                       <span className="text-emerald-200 hidden sm:inline">•</span>
                       <span className="flex items-center gap-1">
                         <FlagQatar className="w-3.5 h-2.5 shrink-0" />
                         <FlagUAE className="w-3.5 h-2.5 shrink-0" />
-                        <span>Serving Qatar & UAE</span>
+                        <span className="truncate">Qatar & UAE</span>
                       </span>
                     </div>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 shrink-0 transition-transform group-hover:translate-x-1 ml-2" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 transition-transform group-hover:translate-x-1 ml-2" />
               </a>
 
               <a
                 href="/login"
-                className="sm:col-span-4 flex items-center justify-center gap-2 px-5 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold text-sm sm:text-base transition-all shadow hover:shadow-md cursor-pointer border border-slate-700 group text-center"
+                className="sm:col-span-5 md:col-span-4 flex items-center justify-center gap-2 p-3.5 sm:px-5 sm:py-4 rounded-xl bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold text-sm sm:text-base transition-all shadow hover:shadow-md cursor-pointer border border-slate-700 group text-center"
               >
                 <span>Explore Live Demo</span>
                 <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1" />

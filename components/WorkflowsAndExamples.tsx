@@ -194,20 +194,20 @@ export default function WorkflowsAndExamples() {
         </div>
 
         {/* Workflow Showcase: Before vs After */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch mb-16 sm:mb-20">
           {/* The Old Spreadsheet Way */}
-          <div className="lg:col-span-5 p-6 sm:p-8 rounded-2xl bg-rose-50/40 border border-rose-200/80 flex flex-col justify-between">
+          <div className="lg:col-span-5 p-5 sm:p-8 rounded-2xl bg-rose-50/40 border border-rose-200/80 flex flex-col justify-between">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold mb-4">
                 <ShieldAlert className="w-3.5 h-3.5" />
                 <span>THE OLD WAY (SPREADSHEETS & PAPER)</span>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
                 {currentWorkflow.before.title}
               </h3>
               <ul className="space-y-3.5">
                 {currentWorkflow.before.points.map((pt, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                  <li key={i} className="flex items-start gap-3 text-xs sm:text-sm text-slate-700">
                     <span className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
                       ×
                     </span>
@@ -216,19 +216,19 @@ export default function WorkflowsAndExamples() {
                 ))}
               </ul>
             </div>
-            <div className="mt-8 pt-4 border-t border-rose-200/60 text-xs font-medium text-rose-700">
+            <div className="mt-6 sm:mt-8 pt-4 border-t border-rose-200/60 text-xs font-medium text-rose-700">
               Result: Discrepancies, delayed shipments, and stressed warehouse managers.
             </div>
           </div>
 
           {/* The StockFlow Way */}
-          <div className="lg:col-span-7 p-6 sm:p-8 rounded-2xl bg-teal-50/40 border border-teal-200/90 shadow-card flex flex-col justify-between">
+          <div className="lg:col-span-7 p-5 sm:p-8 rounded-2xl bg-teal-50/40 border border-teal-200/90 shadow-card flex flex-col justify-between">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-100 text-brand-900 text-xs font-bold mb-4">
                 <CheckCircle className="w-3.5 h-3.5 text-brand-700" />
                 <span>THE STOCKFLOW FLOW</span>
               </div>
-              <h3 className="text-xl font-bold text-navy-900 mb-6">
+              <h3 className="text-lg sm:text-xl font-bold text-navy-900 mb-6">
                 {currentWorkflow.title}
               </h3>
 
@@ -267,12 +267,12 @@ export default function WorkflowsAndExamples() {
         </div>
 
         {/* Real GCC Industry Scenarios */}
-        <div className="p-8 sm:p-10 rounded-2xl bg-slate-900 text-white">
-          <div className="max-w-3xl mb-8">
+        <div className="p-5 sm:p-8 md:p-10 rounded-2xl bg-slate-900 text-white">
+          <div className="max-w-3xl mb-6 sm:mb-8">
             <span className="text-xs font-bold uppercase tracking-wider text-teal-400">
               GCC Regional Use Cases
             </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white mt-1">
               Engineered for Your Specific Industry
             </h3>
           </div>

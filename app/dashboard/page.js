@@ -10,7 +10,6 @@ import {
 import { requirePageAuth } from '@/lib/auth-guard';
 import Link from 'next/link';
 import { getOptimizedImageUrl } from '@/lib/imagekit';
-import DashboardDemoBanner from '@/components/DashboardDemoBanner';
 
 export default async function DashboardPage() {
   const session = await requirePageAuth();
@@ -80,9 +79,6 @@ export default async function DashboardPage() {
           <span>View Reports</span>
         </Link>
       </header>
- 
-      {/* Live Demo Architecture & Workflow Banner */}
-      <DashboardDemoBanner />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

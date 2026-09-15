@@ -66,32 +66,32 @@ export default function AssessmentWidget() {
                   <button
                     type="button"
                     onClick={() => setCountry("qatar")}
-                    className={`relative flex items-center justify-center gap-2.5 py-3.5 px-8 rounded-xl border text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer active:scale-[0.98] ${
+                    className={`relative flex items-center justify-center gap-2 py-3 px-3.5 sm:px-6 rounded-xl border text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer active:scale-[0.98] ${
                       country === "qatar"
                         ? "bg-white border-brand-700 text-brand-900 ring-2 ring-brand-600/20 shadow-sm"
                         : "bg-white/60 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300"
                     }`}
                   >
                     <FlagQatar className="w-5 h-3.5 shrink-0" />
-                    <span>State of Qatar</span>
+                    <span className="truncate">State of Qatar</span>
                     {country === "qatar" && (
-                      <Check className="w-4 h-4 text-brand-700 absolute right-3 top-1/2 -translate-y-1/2" />
+                      <Check className="w-4 h-4 text-brand-700 absolute right-2.5 top-1/2 -translate-y-1/2" />
                     )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setCountry("uae")}
-                    className={`relative flex items-center justify-center gap-2.5 py-3.5 px-8 rounded-xl border text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer active:scale-[0.98] ${
+                    className={`relative flex items-center justify-center gap-2 py-3 px-3.5 sm:px-6 rounded-xl border text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer active:scale-[0.98] ${
                       country === "uae"
                         ? "bg-white border-emerald-600 text-emerald-800 ring-2 ring-emerald-500/20 shadow-sm"
                         : "bg-white/60 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300"
                     }`}
                   >
                     <FlagUAE className="w-5 h-3.5 shrink-0" />
-                    <span>United Arab Emirates</span>
+                    <span className="truncate">United Arab Emirates</span>
                     {country === "uae" && (
-                      <Check className="w-4 h-4 text-emerald-600 absolute right-3 top-1/2 -translate-y-1/2" />
+                      <Check className="w-4 h-4 text-emerald-600 absolute right-2.5 top-1/2 -translate-y-1/2" />
                     )}
                   </button>
                 </div>
@@ -151,10 +151,10 @@ export default function AssessmentWidget() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm transition-all duration-150 shadow hover:shadow-md cursor-pointer group"
+                className="w-full inline-flex items-center justify-center gap-2 p-3.5 sm:px-6 sm:py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm transition-all duration-150 shadow hover:shadow-md cursor-pointer group text-center"
               >
                 <MessageCircle className="w-5 h-5 fill-current shrink-0 transition-transform group-hover:scale-110" />
-                <span>Send Assessment to StockFlow on WhatsApp</span>
+                <span className="truncate">Send Assessment to StockFlow on WhatsApp</span>
                 <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1" />
               </a>
               <div className="text-center mt-2 text-[11px] text-slate-500">
@@ -166,22 +166,22 @@ export default function AssessmentWidget() {
           {/* Right Column: Live WhatsApp Chat Simulation */}
           <div className="lg:col-span-5 rounded-2xl bg-[#EFEAE2] border border-slate-300 shadow-card overflow-hidden flex flex-col justify-between h-full">
             {/* WhatsApp Header */}
-            <div className="bg-[#075E54] text-white p-3.5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center p-1.5 border border-white/20">
+            <div className="bg-[#075E54] text-white p-3.5 flex items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center p-1.5 border border-white/20 shrink-0">
                   <Logo size={22} showWordmark={false} />
                 </div>
-                <div>
-                  <div className="text-sm font-bold leading-tight">
+                <div className="min-w-0">
+                  <div className="text-sm font-bold leading-tight truncate">
                     StockFlow Solutions Team
                   </div>
                   <div className="text-[11px] text-emerald-200 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
-                    <span>Online • replies in &lt; 8 mins</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse shrink-0"></span>
+                    <span className="truncate">Online • replies in &lt; 8 mins</span>
                   </div>
                 </div>
               </div>
-              <div className="text-xs font-mono bg-white/10 px-2 py-1 rounded text-emerald-100">
+              <div className="text-[11px] sm:text-xs font-mono bg-white/10 px-2 py-1 rounded text-emerald-100 shrink-0">
                 +974 7236 0418
               </div>
             </div>

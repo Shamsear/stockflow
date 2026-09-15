@@ -122,7 +122,7 @@ export default function InteractiveTourOverlay() {
         >
           {/* Crisp Primary Border with Dual-Tier Ambient Glow */}
           <div
-            className="absolute inset-0 rounded-[inherit] border-2 border-emerald-500 dark:border-emerald-400 pointer-events-none transition-all duration-300"
+            className="absolute inset-0 rounded-[inherit] border-2 border-emerald-500 dark:border-emerald-400 pointer-events-none"
             style={{
               boxShadow: '0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 20px -2px rgba(16, 185, 129, 0.35), inset 0 0 10px rgba(16, 185, 129, 0.08)',
             }}

@@ -69,17 +69,17 @@ export default function ActivityTicker() {
 
         {/* Center: Dynamic Event */}
         <div
-          className={`flex items-center gap-2 text-slate-300 transition-opacity duration-300 text-center sm:text-left ${
+          className={`flex items-center justify-center sm:justify-start gap-2 text-slate-300 transition-opacity duration-300 text-center sm:text-left min-w-0 max-w-full ${
             fade ? "opacity-100" : "opacity-0"
           }`}
         >
-          <span className="px-2 py-0.5 rounded bg-slate-800 text-teal-300 font-mono text-[10px] font-bold border border-slate-700">
+          <span className="px-2 py-0.5 rounded bg-slate-800 text-teal-300 font-mono text-[10px] font-bold border border-slate-700 shrink-0">
             {current.action}
           </span>
-          <span className="font-semibold text-white">{current.detail}</span>
+          <span className="font-semibold text-white truncate max-w-[190px] xs:max-w-xs sm:max-w-none">{current.detail}</span>
           <span className="hidden md:inline text-slate-500">•</span>
-          <span className="hidden md:flex items-center gap-1 text-slate-400">
-            <MapPin className="w-3 h-3 text-teal-400" />
+          <span className="hidden md:flex items-center gap-1 text-slate-400 shrink-0">
+            <MapPin className="w-3 h-3 text-teal-400 shrink-0" />
             <span>{current.location}</span>
           </span>
         </div>

@@ -204,7 +204,6 @@ export function TourProvider({ children }) {
 
   const [isTourActive, setIsTourActive] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [stepPhase, setStepPhase] = useState('overview'); // 'overview' | 'action'
   const [isMinimized, setIsMinimized] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
@@ -256,12 +255,15 @@ export function TourProvider({ children }) {
         } else {
           setCurrentStepIndex(stepIdx);
         }
-      } else if (pathname === '/login' && !isDismissed && !isCompleted) {
-        // First-time visit to /login
+      } else if (pathname === '/login') {
+        // Welcome visitor on /login: start tour at Step 0
         setIsTourActive(true);
         setCurrentStepIndex(0);
+        setStepPhase('overview');
         localStorage.setItem('stockflow_tour_active', 'true');
         localStorage.setItem('stockflow_tour_step_index', '0');
+        localStorage.removeItem('stockflow_tour_dismissed');
+        localStorage.removeItem('stockflow_tour_completed');
         if (!savedProfile || !JSON.parse(savedProfile)?.name) {
           setIsOnboardingOpen(true);
         }
@@ -278,10 +280,29 @@ export function TourProvider({ children }) {
       .catch(() => {});
   }, []);
 
-  // Reset to page overview whenever step index changes
+  // Ensure tour starts reliably whenever visitor navigates to /login
   useEffect(() => {
-    setStepPhase('overview');
-  }, [currentStepIndex]);
+    if (pathname === '/login') {
+      setIsTourActive(true);
+      setCurrentStepIndex(0);
+      setIsMinimized(false);
+      setIsPdfModalOpen(false);
+
+      try {
+        localStorage.removeItem('stockflow_tour_dismissed');
+        localStorage.removeItem('stockflow_tour_completed');
+        localStorage.setItem('stockflow_tour_active', 'true');
+        localStorage.setItem('stockflow_tour_step_index', '0');
+
+        const savedProfile = localStorage.getItem('stockflow_visitor_profile');
+        if (!savedProfile || !JSON.parse(savedProfile)?.name) {
+          setIsOnboardingOpen(true);
+        } else {
+          setIsOnboardingOpen(false);
+        }
+      } catch {}
+    }
+  }, [pathname]);
 
   // 2. Persist active tour state and step index to localStorage whenever they change
   useEffect(() => {
@@ -314,12 +335,6 @@ export function TourProvider({ children }) {
   // 4. Measure target element bounding rect in pure viewport coordinates with stability detection
   const updateTargetRect = useCallback(() => {
     if (!isTourActive || isOnboardingOpen || !currentStep) {
-      setTargetRect(null);
-      return false;
-    }
-
-    // In 'overview' phase, spotlight is intentionally disabled so user can view the page freely
-    if (stepPhase === 'overview') {
       setTargetRect(null);
       return false;
     }
@@ -379,7 +394,7 @@ export function TourProvider({ children }) {
 
     setTargetRect(null);
     return false;
-  }, [isTourActive, isOnboardingOpen, currentStep, isPdfModalOpen, stepPhase]);
+  }, [isTourActive, isOnboardingOpen, currentStep, isPdfModalOpen]);
 
   // Synchronize target measurement with route/step changes, layout stabilization and rAF scroll capture
   useEffect(() => {
@@ -394,7 +409,6 @@ export function TourProvider({ children }) {
 
     const checkElementSettled = () => {
       if (isCancelled) return;
-      if (stepPhase !== 'action') return;
 
       const targetEl = document.querySelector(currentStep?.targetSelector);
       if (targetEl) {
@@ -422,9 +436,7 @@ export function TourProvider({ children }) {
 
     // Staggered checks after page mount
     const timer1 = setTimeout(() => {
-      if (stepPhase === 'action') {
-        checkElementSettled();
-      }
+      checkElementSettled();
     }, 180);
 
     const timer2 = setTimeout(() => {
@@ -435,9 +447,7 @@ export function TourProvider({ children }) {
     let observer = null;
     if (typeof MutationObserver !== 'undefined') {
       observer = new MutationObserver(() => {
-        if (stepPhase === 'action') {
-          updateTargetRect();
-        }
+        updateTargetRect();
       });
       observer.observe(document.body, { childList: true, subtree: true, attributes: false });
     }
@@ -466,7 +476,7 @@ export function TourProvider({ children }) {
       window.removeEventListener('scroll', handleCapturedScroll, { capture: true });
       window.removeEventListener('resize', handleCapturedScroll);
     };
-  }, [updateTargetRect, pathname, currentStepIndex, isPdfModalOpen, isTourActive, isOnboardingOpen, stepPhase]);
+  }, [updateTargetRect, pathname, currentStepIndex, isPdfModalOpen, isTourActive, isOnboardingOpen]);
 
   // 5. Telemetry helper
   const sendStepTelemetry = useCallback((stepKey, action, extras = {}) => {
@@ -496,7 +506,7 @@ export function TourProvider({ children }) {
     setIsMinimized(false);
     setIsCompletedModalOpen(false);
 
-    if (!visitorProfile?.name) {
+    if (!visitorProfile?.name && pathname === '/login') {
       setIsOnboardingOpen(true);
       return;
     }
@@ -507,7 +517,7 @@ export function TourProvider({ children }) {
     if (step && pathname !== step.route.split('?')[0]) {
       router.push(step.route);
     }
-    sendStepTelemetry(step.id, 'started');
+    sendStepTelemetry(step?.id || 'tour', 'started');
   }, [visitorProfile?.name, pathname, router, sendStepTelemetry]);
 
   const saveVisitorProfile = useCallback(async (profile) => {

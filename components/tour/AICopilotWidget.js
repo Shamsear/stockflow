@@ -92,8 +92,16 @@ export default function AICopilotWidget() {
     if (stepPhase === 'overview') {
       const isMobile = vw < 768;
       const popoverW = Math.min(popoverEl?.offsetWidth || 360, vw - 24);
-      const topPos = isMobile ? 65 : 75;
-      const leftPos = isMobile ? Math.max(12, (vw - popoverW) / 2) : Math.max(16, vw - popoverW - 28);
+      const isLogin = pathname === '/login';
+
+      let topPos = isMobile ? 65 : 75;
+      let leftPos = isMobile ? Math.max(12, (vw - popoverW) / 2) : Math.max(16, vw - popoverW - 28);
+
+      // On /login on wide screens, place neatly over the left brand panel
+      if (isLogin && vw >= 1024) {
+        topPos = 120;
+        leftPos = Math.max(24, Math.round((vw * 0.5 - popoverW) / 2));
+      }
 
       setCoords({
         top: topPos,
@@ -199,12 +207,17 @@ export default function AICopilotWidget() {
       arrowOffset
     });
     setIsPositionReady(true);
-  }, [targetRect, isOnboardingOpen]);
+  }, [targetRect, isOnboardingOpen, stepPhase, pathname]);
 
   // High-Performance Layout Settling & rAF Scroll Tracking
   useEffect(() => {
-    // Hide initially on step / route change until DOM has settled
-    setIsPositionReady(false);
+    // In action phase, hide initially until target DOM element has settled
+    if (stepPhase === 'action') {
+      setIsPositionReady(false);
+    } else {
+      // In overview phase or onboarding, update immediately
+      updatePosition();
+    }
 
     let isCancelled = false;
     let scrollRaf = null;
@@ -223,7 +236,7 @@ export default function AICopilotWidget() {
       if (!isCancelled) {
         updatePosition();
       }
-    }, stepPhase === 'overview' ? 180 : 220);
+    }, stepPhase === 'overview' ? 80 : 220);
 
     const backupTimer = setTimeout(() => {
       if (!isCancelled) {

@@ -47,32 +47,34 @@ export default function DashboardShell({ user, children }) {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-background text-text-primary relative">
       {/* Top Live Demo Quick Bar */}
-      <div className="bg-slate-900 text-white px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between text-xs border-b border-slate-800 z-50 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="font-bold">StockFlow Live Demo System</span>
+      <div className="bg-slate-900 text-white px-3 sm:px-5 py-1.5 sm:py-2 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 text-xs border-b border-slate-800 z-50 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          <span className="font-bold truncate">StockFlow Live Demo</span>
           <span className="text-slate-400 hidden md:inline">• Exploring actual warehouse management software</span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap">
           <button
             type="button"
             onClick={() => setShowDemoGuide(true)}
-            className="text-amber-300 hover:text-amber-200 flex items-center gap-1.5 font-bold text-xs bg-amber-500/15 hover:bg-amber-500/25 px-2.5 py-1 rounded-md border border-amber-500/30 transition-colors"
+            className="text-amber-300 hover:text-amber-200 flex items-center gap-1 font-bold text-xs bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md border border-amber-500/30 transition-colors shrink-0"
           >
-            <BookOpen size={13} />
-            <span>How This WMS Works</span>
+            <BookOpen size={12} />
+            <span className="hidden xs:inline">How This WMS Works</span>
+            <span className="xs:hidden">Guide</span>
           </button>
-          <Link href="/" className="text-slate-300 hover:text-white flex items-center gap-1 font-medium hover:underline text-xs">
-            ← Back to Main Site
+          <Link href="/" className="text-slate-300 hover:text-white flex items-center gap-1 font-medium hover:underline text-xs shrink-0">
+            <span className="hidden sm:inline">← Back to Main Site</span>
+            <span className="sm:hidden">← Site</span>
           </Link>
           <a 
             href="https://wa.me/97472360418?text=Hi%20StockFlow!%20I'm%20exploring%20your%20live%20demo%20and%20want%20to%20tailor%20this%20for%20our%20warehouse."
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-3 py-1 rounded-md font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
+            className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-2.5 py-1 sm:px-3 sm:py-1 rounded-md font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm shrink-0"
           >
-            <span>Tailor For My Warehouse</span>
-            <span className="text-[10px] font-mono text-emerald-100 hidden sm:inline">(WhatsApp +974 7236 0418)</span>
+            <span className="truncate">Tailor For My Warehouse</span>
+            <span className="text-[10px] font-mono text-emerald-100 hidden sm:inline">(WhatsApp)</span>
           </a>
         </div>
       </div>

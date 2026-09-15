@@ -52,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`scroll-smooth ${jakarta.variable}`}>
+    <html lang="en" className={`scroll-smooth overflow-x-hidden ${jakarta.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -84,7 +84,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 selection:bg-teal-100 selection:text-teal-900">
+      <body className="font-sans antialiased min-h-screen flex flex-col overflow-x-hidden bg-[#F8FAFC] text-slate-900 selection:bg-teal-100 selection:text-teal-900">
         <Providers>
           <ThemeProvider>
             {children}
