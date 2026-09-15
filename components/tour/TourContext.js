@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 const TOUR_STEPS = [
@@ -139,7 +139,7 @@ const TOUR_STEPS = [
   },
   {
     id: 'pdf_modal',
-    route: '/dashboard/outbound',
+    route: '/dashboard/outbound?tab=delivery_notes',
     targetSelector: '[data-tour="modal-continue-btn"]',
     stepNumber: '08',
     title: 'Proof of Delivery (POD) Preview',
@@ -237,29 +237,13 @@ export function TourProvider({ children }) {
       const wasActive = localStorage.getItem('stockflow_tour_active') === 'true';
       const savedStep = localStorage.getItem('stockflow_tour_step_index');
 
-      // If user was actively taking the tour and refreshed the page, resume seamlessly!
-      if (wasActive && !isDismissed && !isCompleted) {
-        setIsTourActive(true);
-        let stepIdx = savedStep !== null ? parseInt(savedStep, 10) : 0;
-        if (isNaN(stepIdx) || stepIdx < 0 || stepIdx >= TOUR_STEPS.length) {
-          stepIdx = 0;
-        }
+      const currentCleanPath = pathname ? pathname.split('?')[0] : '';
+      const isTourPage = currentCleanPath === '/login' || currentCleanPath.startsWith('/dashboard');
 
-        // Verify if current page route matches the saved step or another step
-        const currentCleanPath = pathname.split('?')[0];
-        const stepForRoute = TOUR_STEPS.findIndex(s => s.route && s.route.split('?')[0] === currentCleanPath);
-        
-        if (stepForRoute !== -1) {
-          // If the page is on a valid step route, align with it
-          setCurrentStepIndex(stepForRoute);
-        } else {
-          setCurrentStepIndex(stepIdx);
-        }
-      } else if (pathname === '/login') {
+      if (currentCleanPath === '/login') {
         // Welcome visitor on /login: start tour at Step 0
         setIsTourActive(true);
         setCurrentStepIndex(0);
-        setStepPhase('overview');
         localStorage.setItem('stockflow_tour_active', 'true');
         localStorage.setItem('stockflow_tour_step_index', '0');
         localStorage.removeItem('stockflow_tour_dismissed');
@@ -267,6 +251,25 @@ export function TourProvider({ children }) {
         if (!savedProfile || !JSON.parse(savedProfile)?.name) {
           setIsOnboardingOpen(true);
         }
+      } else if (isTourPage && wasActive && !isDismissed && !isCompleted) {
+        // If user was actively taking the tour and refreshed inside the dashboard, resume seamlessly!
+        setIsTourActive(true);
+        let stepIdx = savedStep !== null ? parseInt(savedStep, 10) : 1;
+        if (isNaN(stepIdx) || stepIdx < 0 || stepIdx >= TOUR_STEPS.length) {
+          stepIdx = 1;
+        }
+
+        // Align with current route if current route matches a known step
+        const stepForRoute = TOUR_STEPS.findIndex(s => s.route && s.route.split('?')[0] === currentCleanPath);
+        if (stepForRoute !== -1) {
+          setCurrentStepIndex(stepForRoute);
+        } else {
+          setCurrentStepIndex(stepIdx);
+        }
+      } else {
+        // Home page ('/') or non-tour pages: Tour and onboarding MUST remain deactivated
+        setIsTourActive(false);
+        setIsOnboardingOpen(false);
       }
     } catch {}
 
@@ -280,9 +283,19 @@ export function TourProvider({ children }) {
       .catch(() => {});
   }, []);
 
-  // Ensure tour starts reliably whenever visitor navigates to /login
+  // Ensure tour starts reliably whenever visitor navigates to /login and shuts off on '/'
   useEffect(() => {
-    if (pathname === '/login') {
+    const currentCleanPath = pathname ? pathname.split('?')[0] : '';
+
+    // If navigating to marketing/home page ('/'), immediately turn off active tour UI
+    if (currentCleanPath === '/' || (!currentCleanPath.startsWith('/dashboard') && currentCleanPath !== '/login')) {
+      setIsTourActive(false);
+      setIsOnboardingOpen(false);
+      setTargetRect(null);
+      return;
+    }
+
+    if (currentCleanPath === '/login') {
       setIsTourActive(true);
       setCurrentStepIndex(0);
       setIsMinimized(false);
@@ -316,25 +329,42 @@ export function TourProvider({ children }) {
     } catch {}
   }, [isTourActive, currentStepIndex]);
 
-  // 3. Keep step synced with route if user navigates manually
+  // 3. Keep step synced with route ONLY when user manually navigates to a different module
+  const prevPathnameRef = useRef(pathname);
+
   useEffect(() => {
-    if (!isTourActive || !currentStep) return;
+    if (!isTourActive) {
+      prevPathnameRef.current = pathname;
+      return;
+    }
 
-    const currentCleanPath = pathname.split('?')[0];
-    const stepCleanPath = currentStep.route ? currentStep.route.split('?')[0] : '';
+    const prevPath = prevPathnameRef.current;
+    prevPathnameRef.current = pathname;
 
-    // If route changed and doesn't match current step, find if there is a matching step
-    if (currentCleanPath !== stepCleanPath) {
-      const matchingIdx = TOUR_STEPS.findIndex(s => s.route && s.route.split('?')[0] === currentCleanPath);
-      if (matchingIdx !== -1) {
-        setCurrentStepIndex(matchingIdx);
-      }
+    // Only run when pathname actually changes
+    if (prevPath === pathname) return;
+
+    const currentCleanPath = pathname ? pathname.split('?')[0] : '';
+    const stepCleanPath = currentStep?.route ? currentStep.route.split('?')[0] : '';
+
+    // If current step already matches the new pathname, don't change step
+    if (currentCleanPath === stepCleanPath) return;
+
+    // Otherwise, user navigated manually to a different route.
+    const matchingIdx = TOUR_STEPS.findIndex(s => s.route && s.route.split('?')[0] === currentCleanPath);
+    if (matchingIdx !== -1) {
+      setCurrentStepIndex(matchingIdx);
     }
   }, [pathname, isTourActive, currentStep]);
 
   // 4. Measure target element bounding rect in pure viewport coordinates with stability detection
   const updateTargetRect = useCallback(() => {
     if (!isTourActive || isOnboardingOpen || !currentStep) {
+      return false;
+    }
+
+    const currentCleanPath = pathname ? pathname.split('?')[0] : '';
+    if (currentCleanPath === '/' || (!currentCleanPath.startsWith('/dashboard') && currentCleanPath !== '/login')) {
       setTargetRect(null);
       return false;
     }
@@ -348,11 +378,6 @@ export function TourProvider({ children }) {
           tabBtn.click();
         }
       }
-    }
-
-    // Special handling for Step 08: Ensure PDF modal is open
-    if (currentStep.id === 'pdf_modal' && !isPdfModalOpen) {
-      setIsPdfModalOpen(true);
     }
 
     const targetEl = document.querySelector(currentStep.targetSelector) ||
@@ -370,10 +395,12 @@ export function TourProvider({ children }) {
                         parseFloat(style.opacity || '1') > 0.05;
 
       if (isVisible) {
-        // Auto scroll into view if offscreen
-        const isOffscreen = rect.top < 65 || rect.bottom > window.innerHeight - 30;
-        if (isOffscreen && typeof targetEl.scrollIntoView === 'function') {
-          targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Auto scroll into view if offscreen (except for modal elements which are already centered)
+        if (currentStep.id !== 'pdf_modal') {
+          const isOffscreen = rect.top < 65 || rect.bottom > window.innerHeight - 30;
+          if (isOffscreen && typeof targetEl.scrollIntoView === 'function') {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
         }
 
         const computedRadius = style.borderRadius || '12px';
@@ -392,67 +419,79 @@ export function TourProvider({ children }) {
       }
     }
 
-    setTargetRect(null);
     return false;
-  }, [isTourActive, isOnboardingOpen, currentStep, isPdfModalOpen]);
+  }, [isTourActive, isOnboardingOpen, currentStep, pathname]);
 
   // Synchronize target measurement with route/step changes, layout stabilization and rAF scroll capture
   useEffect(() => {
-    setTargetRect(null);
+    if (!isTourActive || isOnboardingOpen || !currentStep) {
+      setTargetRect(null);
+      return;
+    }
 
-    // Layout Stability Engine: Wait for page DOM and tables to settle before locking coordinates
+    const currentCleanPath = pathname ? pathname.split('?')[0] : '';
+    if (currentCleanPath === '/' || (!currentCleanPath.startsWith('/dashboard') && currentCleanPath !== '/login')) {
+      setTargetRect(null);
+      return;
+    }
+
     let isCancelled = false;
-    let stableCount = 0;
-    let lastTop = -999;
-    let lastLeft = -999;
-    let checkRaf = null;
+    let checkInterval = null;
+    const startTime = Date.now();
 
-    const checkElementSettled = () => {
-      if (isCancelled) return;
+    // 1. Try immediate resolution (instant for sidebar links & rendered buttons)
+    const foundImmediate = updateTargetRect();
+    if (foundImmediate) {
+      // Re-verify once layout settles to handle dynamic font loads or banner height adjustments
+      const settleTimer = setTimeout(() => {
+        if (!isCancelled) updateTargetRect();
+      }, 150);
 
-      const targetEl = document.querySelector(currentStep?.targetSelector);
-      if (targetEl) {
-        const r = targetEl.getBoundingClientRect();
-        if (r.width > 0 && r.height > 0) {
-          const deltaY = Math.abs(r.top - lastTop);
-          const deltaX = Math.abs(r.left - lastLeft);
-
-          if (deltaY < 0.5 && deltaX < 0.5) {
-            stableCount++;
-            if (stableCount >= 2) {
-              updateTargetRect();
-              return;
-            }
-          } else {
-            stableCount = 0;
-          }
-
-          lastTop = r.top;
-          lastLeft = r.left;
+      let scrollRaf = null;
+      const handleScroll = () => {
+        if (scrollRaf === null) {
+          scrollRaf = requestAnimationFrame(() => {
+            updateTargetRect();
+            scrollRaf = null;
+          });
         }
+      };
+
+      window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+      window.addEventListener('resize', handleScroll, { passive: true });
+
+      return () => {
+        isCancelled = true;
+        clearTimeout(settleTimer);
+        if (scrollRaf) cancelAnimationFrame(scrollRaf);
+        window.removeEventListener('scroll', handleScroll, { capture: true });
+        window.removeEventListener('resize', handleScroll);
+      };
+    }
+
+    // 2. Continuous high-speed polling while Next.js loads async page components & tables
+    const pollTarget = () => {
+      if (isCancelled) return;
+      const found = updateTargetRect();
+      if (found || Date.now() - startTime > 4000) {
+        if (checkInterval) clearInterval(checkInterval);
       }
-      checkRaf = requestAnimationFrame(checkElementSettled);
     };
 
-    // Staggered checks after page mount
-    const timer1 = setTimeout(() => {
-      checkElementSettled();
-    }, 180);
+    checkInterval = setInterval(pollTarget, 40);
 
-    const timer2 = setTimeout(() => {
-      updateTargetRect();
-    }, 350);
-
-    // MutationObserver to catch element additions
+    // 3. MutationObserver to catch element additions the instant they mount
     let observer = null;
     if (typeof MutationObserver !== 'undefined') {
       observer = new MutationObserver(() => {
-        updateTargetRect();
+        if (!isCancelled) {
+          updateTargetRect();
+        }
       });
       observer.observe(document.body, { childList: true, subtree: true, attributes: false });
     }
 
-    // HIGH-PERFORMANCE rAF SCROLL CAPTURE: Zero lag, zero scroll stutter
+    // 4. HIGH-PERFORMANCE rAF SCROLL CAPTURE
     let scrollRaf = null;
     const handleCapturedScroll = () => {
       if (scrollRaf === null) {
@@ -468,15 +507,13 @@ export function TourProvider({ children }) {
 
     return () => {
       isCancelled = true;
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      if (checkRaf) cancelAnimationFrame(checkRaf);
+      if (checkInterval) clearInterval(checkInterval);
       if (scrollRaf) cancelAnimationFrame(scrollRaf);
       observer?.disconnect();
       window.removeEventListener('scroll', handleCapturedScroll, { capture: true });
       window.removeEventListener('resize', handleCapturedScroll);
     };
-  }, [updateTargetRect, pathname, currentStepIndex, isPdfModalOpen, isTourActive, isOnboardingOpen]);
+  }, [updateTargetRect, pathname, currentStepIndex, isPdfModalOpen, isTourActive, isOnboardingOpen, currentStep]);
 
   // 5. Telemetry helper
   const sendStepTelemetry = useCallback((stepKey, action, extras = {}) => {
@@ -519,6 +556,30 @@ export function TourProvider({ children }) {
     }
     sendStepTelemetry(step?.id || 'tour', 'started');
   }, [visitorProfile?.name, pathname, router, sendStepTelemetry]);
+
+  // Listen for global guide open requests (e.g. from banners, buttons, or links)
+  useEffect(() => {
+    const handleOpenGuide = (e) => {
+      const stepIdx = e?.detail?.stepIndex;
+      if (typeof stepIdx === 'number') {
+        startTour(stepIdx);
+      } else {
+        if (isTourActive) {
+          setIsMinimized(false);
+        } else {
+          const currentCleanPath = pathname ? pathname.split('?')[0] : '';
+          const matchIdx = TOUR_STEPS.findIndex(s => s.route && s.route.split('?')[0] === currentCleanPath);
+          startTour(matchIdx !== -1 ? matchIdx : 1);
+        }
+      }
+    };
+    window.addEventListener('open-demo-guide', handleOpenGuide);
+    window.addEventListener('open-unified-guide', handleOpenGuide);
+    return () => {
+      window.removeEventListener('open-demo-guide', handleOpenGuide);
+      window.removeEventListener('open-unified-guide', handleOpenGuide);
+    };
+  }, [isTourActive, startTour, pathname]);
 
   const saveVisitorProfile = useCallback(async (profile) => {
     const updated = {
@@ -583,6 +644,10 @@ export function TourProvider({ children }) {
     sendStepTelemetry(currentStep.id, 'completed');
     setCompletedSteps(prev => [...new Set([...prev, currentStep.id])]);
 
+    if (isPdfModalOpen) {
+      setIsPdfModalOpen(false);
+    }
+
     if (currentStepIndex < TOUR_STEPS.length - 1) {
       const nextIdx = currentStepIndex + 1;
       const nextSt = TOUR_STEPS[nextIdx];
@@ -602,7 +667,7 @@ export function TourProvider({ children }) {
       setIsCompletedModalOpen(true);
       sendStepTelemetry('all_steps', 'completed');
     }
-  }, [currentStep, currentStepIndex, pathname, router, sendStepTelemetry]);
+  }, [currentStep, currentStepIndex, isPdfModalOpen, pathname, router, sendStepTelemetry]);
 
   const prevStep = useCallback(() => {
     if (currentStepIndex > 0) {
@@ -643,7 +708,20 @@ export function TourProvider({ children }) {
 
   const closePdfModal = useCallback(() => {
     setIsPdfModalOpen(false);
-  }, []);
+    // If the modal was closed while on the pdf_modal step, revert to delivery_notes step
+    // so the spotlight returns cleanly to the View PDF button without getting stuck or looping
+    if (currentStep?.id === 'pdf_modal') {
+      setCurrentStepIndex(6); // Step 07: delivery_notes
+    }
+  }, [currentStep]);
+
+  const continueFromPdfModal = useCallback(() => {
+    setIsPdfModalOpen(false);
+    sendStepTelemetry('pdf_modal', 'completed');
+    setCompletedSteps(prev => [...new Set([...prev, 'pdf_modal'])]);
+    setCurrentStepIndex(8); // Step 09: client_returns
+    router.push('/dashboard/client-returns');
+  }, [router, sendStepTelemetry]);
 
   // 8. Global Action-Click Interceptor
   useEffect(() => {
@@ -670,12 +748,8 @@ export function TourProvider({ children }) {
           return;
         }
 
-        // Special case: modal continue button closes modal and advances
+        // Special case: modal continue button is handled directly by continueFromPdfModal in DeliveryNotePreviewModal
         if (currentStep.id === 'pdf_modal') {
-          setTimeout(() => {
-            setIsPdfModalOpen(false);
-            nextStep();
-          }, 100);
           return;
         }
 
@@ -781,6 +855,7 @@ export function TourProvider({ children }) {
         skipTour,
         openPdfModal,
         closePdfModal,
+        continueFromPdfModal,
         setIsMinimized,
         setIsChatOpen,
         setIsCompletedModalOpen,
@@ -805,7 +880,9 @@ export function useTour() {
       currentStepIndex: 0,
       isTourActive: false,
       startTour: () => {},
-      openPdfModal: () => {}
+      openPdfModal: () => {},
+      closePdfModal: () => {},
+      continueFromPdfModal: () => {}
     };
   }
   return context;

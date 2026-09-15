@@ -1,18 +1,41 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTour } from './TourContext';
 import { FileText, X, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function DeliveryNotePreviewModal() {
-  const { isPdfModalOpen, closePdfModal, nextStep, isTourActive } = useTour();
+  const { isPdfModalOpen, closePdfModal, continueFromPdfModal, currentStep } = useTour();
+
+  // Handle ESC key to dismiss modal
+  useEffect(() => {
+    if (!isPdfModalOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        closePdfModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPdfModalOpen, closePdfModal]);
 
   if (!isPdfModalOpen) return null;
 
-  const handleContinue = () => {
-    closePdfModal();
-    if (isTourActive) {
-      nextStep();
+  const handleContinue = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (continueFromPdfModal) {
+      continueFromPdfModal();
+    } else {
+      closePdfModal();
+    }
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      closePdfModal();
     }
   };
 
@@ -22,8 +45,12 @@ export default function DeliveryNotePreviewModal() {
       role="dialog"
       aria-modal="true"
       aria-label="Delivery Note Preview"
+      onClick={handleBackdropClick}
     >
-      <div className="bg-surface border border-border rounded-2xl w-full max-w-[640px] max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-slide-down">
+      <div 
+        className="bg-surface border border-border rounded-2xl w-full max-w-[640px] max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-slide-down"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header Bar */}
         <div className="px-5 py-3.5 bg-surface-elevated/40 border-b border-border flex items-center justify-between">
@@ -160,7 +187,7 @@ export default function DeliveryNotePreviewModal() {
         {/* Footer Action Bar */}
         <div className="px-5 py-3 bg-surface-elevated/40 border-t border-border flex items-center justify-between gap-3">
           <div className="text-[11px] text-text-muted hidden sm:block font-mono">
-            STEP 07: PROOF OF DELIVERY VERIFICATION
+            {currentStep?.stepNumber ? `STEP ${currentStep.stepNumber}` : 'STEP 08'}: PROOF OF DELIVERY VERIFICATION
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">

@@ -54,15 +54,8 @@ export default function DashboardShell({ user, children }) {
           <span className="text-slate-400 hidden md:inline">• Exploring actual warehouse management software</span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setShowDemoGuide(true)}
-            className="text-amber-300 hover:text-amber-200 flex items-center gap-1 font-bold text-xs bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md border border-amber-500/30 transition-colors shrink-0"
-          >
-            <BookOpen size={12} />
-            <span className="hidden xs:inline">How This WMS Works</span>
-            <span className="xs:hidden">Guide</span>
-          </button>
+          {/* Unified WMS Guide Launcher */}
+          <TourTriggerButton variant="topbar" />
           <Link href="/" className="text-slate-300 hover:text-white flex items-center gap-1 font-medium hover:underline text-xs shrink-0">
             <span className="hidden sm:inline">← Back to Main Site</span>
             <span className="sm:hidden">← Site</span>
@@ -180,19 +173,8 @@ export default function DashboardShell({ user, children }) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 h-full">
-            {/* Tour Launcher Trigger */}
+            {/* Unified WMS Guide Launcher */}
             <TourTriggerButton />
-
-            {/* Demo Guide Launcher */}
-            <button
-              type="button"
-              onClick={() => setShowDemoGuide(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-xs font-semibold transition-colors"
-            >
-              <BookOpen size={13} />
-              <span className="hidden md:inline">How It Works</span>
-              <span className="md:hidden">Guide</span>
-            </button>
 
             <PushSubscriptionBtn />
             <div className="hidden sm:block h-6 w-px bg-border" />

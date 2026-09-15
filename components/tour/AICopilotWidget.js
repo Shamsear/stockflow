@@ -197,18 +197,12 @@ export default function AICopilotWidget() {
       }
     };
 
-    // Buffer to let Next.js finish mounting page, tables and banners
+    // Quick settle verification for dynamic layout changes
     const settleTimer = setTimeout(() => {
       if (!isCancelled) {
         updatePosition();
       }
-    }, 120);
-
-    const backupTimer = setTimeout(() => {
-      if (!isCancelled) {
-        updatePosition();
-      }
-    }, 350);
+    }, 100);
 
     window.addEventListener('resize', handleScroll, { passive: true });
     window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
@@ -216,18 +210,18 @@ export default function AICopilotWidget() {
     return () => {
       isCancelled = true;
       clearTimeout(settleTimer);
-      clearTimeout(backupTimer);
       if (scrollRaf) cancelAnimationFrame(scrollRaf);
       window.removeEventListener('resize', handleScroll);
       window.removeEventListener('scroll', handleScroll, { capture: true });
     };
   }, [updatePosition, currentStepIndex, pathname, isChatOpen, isMinimized]);
 
-  if (!isTourActive) return null;
+  const currentCleanPath = pathname ? pathname.split('?')[0] : '';
+  const isTourPage = currentCleanPath === '/login' || currentCleanPath.startsWith('/dashboard');
+
+  if (!isTourActive || !isTourPage) return null;
   if (isPdfModalOpen) return null;
   if (!isOnboardingOpen && !currentStep) return null;
-  // If target element has not been measured yet, keep hidden until settled
-  if (!isOnboardingOpen && !targetRect) return null;
 
   const handleSend = async (e) => {
     e?.preventDefault();
@@ -404,8 +398,8 @@ export default function AICopilotWidget() {
         top: `${coords.top}px`,
         left: `${coords.left}px`,
       }}
-      className={`fixed z-[95] w-[calc(100vw-24px)] sm:w-[330px] md:w-[350px] transition-opacity duration-150 ease-out pointer-events-auto select-none ${
-        isPositionReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      className={`fixed z-[95] w-[calc(100vw-24px)] sm:w-[330px] md:w-[350px] transition-all duration-200 ease-out pointer-events-auto select-none ${
+        isPositionReady && targetRect ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
       }`}
       role="region"
       aria-label="Interactive Tour Cloud Callout"

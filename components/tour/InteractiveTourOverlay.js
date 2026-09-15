@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 import { useTour } from './TourContext';
 
 export default function InteractiveTourOverlay() {
+  const pathname = usePathname();
   const { isTourActive, targetRect, isPdfModalOpen } = useTour();
   const [viewport, setViewport] = useState({ width: 0, height: 0, scrollY: 0, scrollX: 0 });
 
@@ -52,7 +54,10 @@ export default function InteractiveTourOverlay() {
     return 14;
   }, [targetRect?.borderRadius]);
 
-  if (!isTourActive || isPdfModalOpen || !targetRect) return null;
+  const currentCleanPath = pathname ? pathname.split('?')[0] : '';
+  const isTourPage = currentCleanPath === '/login' || currentCleanPath.startsWith('/dashboard');
+
+  if (!isTourActive || !isTourPage || isPdfModalOpen || !targetRect) return null;
 
   // Precision padding: 4px tight hugging
   const padding = 4;
@@ -73,7 +78,7 @@ export default function InteractiveTourOverlay() {
       {/* SVG Mask Cutout with Concentric Rounded Rect */}
       {rect && !rect.isOffscreen && rect.width > 0 && rect.height > 0 ? (
         <svg
-          className="fixed inset-0 w-full h-full pointer-events-none"
+          className="fixed inset-0 w-full h-full pointer-events-none transition-all duration-200"
           width="100%"
           height="100%"
           xmlns="http://www.w3.org/2000/svg"
@@ -91,6 +96,7 @@ export default function InteractiveTourOverlay() {
                 rx={radiusPx}
                 ry={radiusPx}
                 fill="#000000"
+                className="transition-all duration-200 ease-out"
               />
             </mask>
           </defs>
@@ -108,10 +114,10 @@ export default function InteractiveTourOverlay() {
         <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-[1px] pointer-events-none transition-opacity duration-300" />
       )}
 
-      {/* Target Highlight Container: Precision Luminous Frame */}
+      {/* Target Highlight Container: Precision Luminous Frame with Smooth CSS Transitions */}
       {rect && !rect.isOffscreen && rect.width > 0 && rect.height > 0 && (
         <div
-          className="fixed pointer-events-none z-[85] transition-opacity duration-200"
+          className="fixed pointer-events-none z-[85] transition-all duration-200 ease-out"
           style={{
             top: `${rect.top}px`,
             left: `${rect.left}px`,
