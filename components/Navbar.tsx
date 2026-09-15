@@ -37,12 +37,12 @@ export default function Navbar() {
         </nav>
 
         {/* Right: Clean, Spacious Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <a
             href="/login"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-800 font-semibold text-xs sm:text-sm transition-all border border-slate-200 shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-xs shrink-0"
           >
-            <MonitorPlay className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-700 shrink-0" />
+            <MonitorPlay className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
             <span className="whitespace-nowrap">Live Demo</span>
           </a>
 
@@ -50,16 +50,15 @@ export default function Navbar() {
             href="https://wa.me/97472360418?text=Hi%20StockFlow%20team,%20I'm%20interested%20in%20a%20tailored%20warehouse%20dashboard%20demo."
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-5 sm:py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs sm:text-sm transition-all duration-150 shadow-xs hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+            className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs sm:text-sm transition-all duration-150 shadow-xs hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 shrink-0"
           >
             {/* Live Online Pulse inside CTA */}
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-200"></span>
             </span>
-            <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 fill-current" />
-            <span className="hidden sm:inline whitespace-nowrap">Chat on WhatsApp</span>
-            <span className="sm:hidden whitespace-nowrap">WhatsApp</span>
+            <MessageCircle className="w-4 h-4 shrink-0 fill-current" />
+            <span className="whitespace-nowrap">Chat on WhatsApp</span>
           </a>
         </div>
       </div>
