@@ -135,6 +135,7 @@ export default function InboundLedgerClient({ transactions, totalCount, totalPag
           />
           <Link 
             href="/dashboard/inbound/new" 
+            data-tour="inbound-new-btn"
             className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 bg-primary hover:bg-primary-hover text-white font-semibold text-xs sm:text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 whitespace-nowrap"
           >
             <Plus size={16} />

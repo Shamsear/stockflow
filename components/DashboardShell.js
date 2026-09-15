@@ -10,6 +10,11 @@ import PushSubscriptionBtn from '@/components/PushSubscriptionBtn';
 import Logo from '@/components/Logo';
 import DemoGuideModal from '@/components/DemoGuideModal';
 import { PanelLeftClose, PanelLeftOpen, LogOut, Menu, X, Loader2, BookOpen } from 'lucide-react';
+import { TourProvider } from '@/components/tour/TourContext';
+import InteractiveTourOverlay from '@/components/tour/InteractiveTourOverlay';
+import AICopilotWidget from '@/components/tour/AICopilotWidget';
+import TourEndModal from '@/components/tour/TourEndModal';
+import TourTriggerButton from '@/components/tour/TourTriggerButton';
 
 export default function DashboardShell({ user, children }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -44,7 +49,8 @@ export default function DashboardShell({ user, children }) {
   };
 
   return (
-    <div className="h-[100dvh] overflow-hidden flex flex-col bg-background text-text-primary relative">
+    <TourProvider>
+      <div className="h-[100dvh] overflow-hidden flex flex-col bg-background text-text-primary relative">
       {/* Top Live Demo Quick Bar */}
       <div className="bg-slate-900 text-white px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between text-xs border-b border-slate-800 z-50 shrink-0">
         <div className="flex items-center gap-2">
@@ -177,22 +183,19 @@ export default function DashboardShell({ user, children }) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 h-full">
+            {/* Tour Launcher Trigger */}
+            <TourTriggerButton />
+
             {/* Demo Guide Launcher */}
             <button
               type="button"
               onClick={() => setShowDemoGuide(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 rounded-full text-xs font-bold transition-all duration-200 hover:shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-xs font-semibold transition-colors"
             >
               <BookOpen size={13} />
-              <span className="hidden md:inline">How StockFlow Works (Guide)</span>
+              <span className="hidden md:inline">How It Works</span>
               <span className="md:hidden">Guide</span>
             </button>
-
-            {/* Live Demo Status Pill - Roomy and prominent in open space */}
-            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-teal-50 border border-teal-200/80 text-teal-800 text-xs font-semibold rounded-full shadow-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
-              <span>Live Demo Mode</span>
-            </div>
 
             <PushSubscriptionBtn />
             <div className="hidden sm:block h-6 w-px bg-border" />
@@ -264,7 +267,13 @@ export default function DashboardShell({ user, children }) {
         isOpen={showDemoGuide} 
         onClose={() => setShowDemoGuide(false)} 
       />
+
+      {/* Interactive Tour Spotlight, AI Assistant Card, and Completion Dialog */}
+      <InteractiveTourOverlay />
+      <AICopilotWidget />
+      <TourEndModal />
       </div>
     </div>
+    </TourProvider>
   );
 }

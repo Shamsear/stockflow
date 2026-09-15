@@ -30,19 +30,21 @@ export default function ModuleOrientationBanner({
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">
-              {badge}
-            </span>
-            <span className="font-bold text-text-primary text-xs sm:text-sm">
+            <span className="font-semibold text-text-primary text-xs sm:text-sm">
               {title}
             </span>
+            {badge && (
+              <span className="text-[11px] text-text-muted">
+                • {badge}
+              </span>
+            )}
           </div>
           <p className="text-text-secondary text-[11px] sm:text-xs mt-1 leading-relaxed">
             {description}
           </p>
           {tip && (
-            <p className="text-text-muted text-[11px] mt-1 italic">
-              💡 <strong>Demo Tip:</strong> {tip}
+            <p className="text-text-muted text-[11px] mt-1">
+              <span className="font-semibold text-text-secondary">Note:</span> {tip}
             </p>
           )}
         </div>

@@ -126,6 +126,7 @@ export default function OutboundLedgerClient({ transactions = [], totalCount = 0
           />
           <Link 
             href="/dashboard/outbound/new" 
+            data-tour="outbound-new-btn"
             className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 bg-primary hover:bg-primary-hover text-white font-semibold text-xs sm:text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 whitespace-nowrap"
           >
             <Plus size={16} />
@@ -348,7 +349,7 @@ export default function OutboundLedgerClient({ transactions = [], totalCount = 0
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div data-tour="delivery-notes-table" className="flex flex-col gap-3">
             {filteredGroups.length === 0 ? (
               <div className="py-16 text-center flex flex-col items-center gap-3 text-text-muted bg-surface rounded-xl border border-border">
                 <FileText size={48} className="text-text-muted" />

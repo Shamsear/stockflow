@@ -263,5 +263,60 @@ model ScanSession {
   createdAt DateTime @default(now())
 }
 
+// ------------------------------------------------------
+// DEMO TELEMETRY & VISITOR INTELLIGENCE
+// ------------------------------------------------------
+
+model DemoVisitorSession {
+  id                 String             @id @default(uuid())
+  ip                 String?
+  country            String?
+  countryCode        String?
+  city               String?
+  deviceType         String?
+  browser            String?
+  referrer           String?
+  startedAt          DateTime           @default(now())
+  lastActiveAt       DateTime           @updatedAt
+  completedTour      Boolean            @default(false)
+  completedSteps     String[]           @default([])
+  totalStepsCount    Int                @default(0)
+  satisfactionRating Int?
+  feedbackComment    String?
+  clickedWhatsApp    Boolean            @default(false)
+  leadName           String?
+  leadCompany        String?
+  leadPhone          String?
+  chatMessages       DemoChatMessage[]
+  stepEvents         DemoStepEvent[]
+
+  @@index([country])
+  @@index([startedAt])
+  @@index([completedTour])
+}
+
+model DemoChatMessage {
+  id        String             @id @default(uuid())
+  sessionId String
+  session   DemoVisitorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime           @default(now())
+
+  @@index([sessionId])
+}
+
+model DemoStepEvent {
+  id              String             @id @default(uuid())
+  sessionId       String
+  session         DemoVisitorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  stepKey         String
+  action          String
+  durationSeconds Int?
+  createdAt       DateTime           @default(now())
+
+  @@index([sessionId])
+}
+
 
 

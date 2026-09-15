@@ -80,73 +80,74 @@ export default function ReportsClient({ initialProducts, brands }) {
         icon={Package}
         title="Global Stock Summary Report"
         description="Comprehensive audit report of stock distributions across Warehouse, Outlets, and Staff"
-        actions={<>
-          <button 
-            type="button" 
-            onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200"
-          >
-            <Printer size={15} />
-            <span>Export PDF</span>
-          </button>
-          <ExportToExcel
-            data={filteredProducts.map(p => {
-              const stock = getProductStock(p.transactions || []);
-              return {
-                Product: p.name,
-                SKU: p.itemCode || '',
-                Brand: p.brand?.name || '',
-                Category: p.category || '',
-                Purchased: stock.purchased,
-                Warehouse: stock.warehouse,
-                Issued: stock.issued,
-                Used: stock.used,
-                Damage: stock.damage,
-                Lost: stock.lost,
-                'With Client': stock.withClient,
-                Rebrand: stock.reBrand,
-                'Total Stock': stock.total,
-              };
-            })}
-            columns={[
-              { header: 'Product', key: 'Product', width: 25 },
-              { header: 'SKU', key: 'SKU', width: 14 },
-              { header: 'Brand', key: 'Brand', width: 18 },
-              { header: 'Category', key: 'Category', width: 16 },
-              { header: 'Purchased', key: 'Purchased', width: 12 },
-              { header: 'Warehouse', key: 'Warehouse', width: 12 },
-              { header: 'Issued', key: 'Issued', width: 12 },
-              { header: 'Used', key: 'Used', width: 12 },
-              { header: 'Damage', key: 'Damage', width: 10 },
-              { header: 'Lost', key: 'Lost', width: 10 },
-              { header: 'With Client', key: 'With Client', width: 12 },
-              { header: 'Rebrand', key: 'Rebrand', width: 10 },
-              { header: 'Total Stock', key: 'Total Stock', width: 12 },
-            ]}
-            filename="StockFlow-Stock-Report"
-          />
-          <button 
-            type="button" 
-            onClick={() => {
-              const headers = ['Product', 'SKU', 'Brand', 'Category', 'Purchased', 'Warehouse', 'Issued', 'Used', 'Damage', 'Lost', 'With Client', 'Rebrand', 'Total Stock'];
-              const rows = filteredProducts.map(p => {
+        actions={
+          <div data-tour="reports-export-btns" className="flex items-center gap-2">
+            <button 
+              type="button" 
+              onClick={handlePrint}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              <Printer size={15} />
+              <span>Export PDF</span>
+            </button>
+            <ExportToExcel
+              data={filteredProducts.map(p => {
                 const stock = getProductStock(p.transactions || []);
-                return [p.name, p.itemCode || '', p.brand?.name || '', p.category || '', stock.purchased, stock.warehouse, stock.issued, stock.used, stock.damage, stock.lost, stock.withClient, stock.reBrand, stock.total];
-              });
-              const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-              const blob = new Blob([csv], { type: 'text/csv' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url; a.download = `StockFlow-Stock-Report-${new Date().toISOString().split('T')[0]}.csv`;
-              a.click(); URL.revokeObjectURL(url);
-            }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-sm font-bold transition-all duration-200"
-          >
-            <Download size={15} />
-            <span>Export CSV</span>
-          </button>
-        </>
-      }
+                return {
+                  Product: p.name,
+                  SKU: p.itemCode || '',
+                  Brand: p.brand?.name || '',
+                  Category: p.category || '',
+                  Purchased: stock.purchased,
+                  Warehouse: stock.warehouse,
+                  Issued: stock.issued,
+                  Used: stock.used,
+                  Damage: stock.damage,
+                  Lost: stock.lost,
+                  'With Client': stock.withClient,
+                  Rebrand: stock.reBrand,
+                  'Total Stock': stock.total,
+                };
+              })}
+              columns={[
+                { header: 'Product', key: 'Product', width: 25 },
+                { header: 'SKU', key: 'SKU', width: 14 },
+                { header: 'Brand', key: 'Brand', width: 18 },
+                { header: 'Category', key: 'Category', width: 16 },
+                { header: 'Purchased', key: 'Purchased', width: 12 },
+                { header: 'Warehouse', key: 'Warehouse', width: 12 },
+                { header: 'Issued', key: 'Issued', width: 12 },
+                { header: 'Used', key: 'Used', width: 12 },
+                { header: 'Damage', key: 'Damage', width: 10 },
+                { header: 'Lost', key: 'Lost', width: 10 },
+                { header: 'With Client', key: 'With Client', width: 12 },
+                { header: 'Rebrand', key: 'Rebrand', width: 10 },
+                { header: 'Total Stock', key: 'Total Stock', width: 12 },
+              ]}
+              filename="StockFlow-Stock-Report"
+            />
+            <button 
+              type="button" 
+              onClick={() => {
+                const headers = ['Product', 'SKU', 'Brand', 'Category', 'Purchased', 'Warehouse', 'Issued', 'Used', 'Damage', 'Lost', 'With Client', 'Rebrand', 'Total Stock'];
+                const rows = filteredProducts.map(p => {
+                  const stock = getProductStock(p.transactions || []);
+                  return [p.name, p.itemCode || '', p.brand?.name || '', p.category || '', stock.purchased, stock.warehouse, stock.issued, stock.used, stock.damage, stock.lost, stock.withClient, stock.reBrand, stock.total];
+                });
+                const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `StockFlow-Stock-Report-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click(); URL.revokeObjectURL(url);
+              }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-sm font-bold transition-all duration-200"
+            >
+              <Download size={15} />
+              <span>Export CSV</span>
+            </button>
+          </div>
+        }
       />
 
       {/* Workflow Guidance Banner */}

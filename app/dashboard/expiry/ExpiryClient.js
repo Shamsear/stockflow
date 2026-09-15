@@ -123,7 +123,7 @@ export default function ExpiryClient({ initialBatches }) {
       />
 
       {/* Stats Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div data-tour="fefo-status-cards" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex items-center gap-3">
           <div className="w-10 h-10 rounded-sm bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
             <Package size={20} />
