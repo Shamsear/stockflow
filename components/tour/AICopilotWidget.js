@@ -594,6 +594,21 @@ export default function AICopilotWidget() {
               {currentStep.pageOverview || currentStep.explanation}
             </p>
 
+            {/* Page Features Bullets */}
+            {currentStep.pageFeatures && currentStep.pageFeatures.length > 0 && !isNavigating && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">What you can do here</span>
+                <ul className="flex flex-col gap-1">
+                  {currentStep.pageFeatures.map((feat, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[11px] text-slate-700 dark:text-slate-300 leading-snug">
+                      <CheckCircle2 size={12} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Navigation Loading or Action Pill Callout */}
             {isNavigating ? (
               <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-200 animate-pulse">
@@ -663,8 +678,13 @@ export default function AICopilotWidget() {
                         <span>Loading...</span>
                       </>
                     ) : (
-                      <>
-                        <span>Next</span>
+                  <>
+                        <span>
+                          {currentStep.nextStepTitle
+                            ? `Next: ${currentStep.nextStepTitle}`
+                            : 'Next'
+                          }
+                        </span>
                         <ChevronRight size={13} />
                       </>
                     )}

@@ -432,12 +432,14 @@ export default function ClientReturnsLedgerClient({ transactions, totalCount, to
       </header>
 
       {/* Workflow Guidance Banner */}
-      <ModuleOrientationBanner
-        badge="Returns & Discrepancies"
-        title="Store Returns & Official Gate Pass Issuance"
-        description="Audit stock sent to or returned from retail clients and brand owners. Generates official Return Gate Pass PDFs with driver documentation and dual authorization sign-offs."
-        tip="Switch to 'Return to Warehouse Notes' or 'Sent to Client Notes' to view and download official Gate Pass PDFs."
-      />
+      <div data-tour="client-returns-banner">
+        <ModuleOrientationBanner
+          badge="Returns & Discrepancies"
+          title="Store Returns & Official Gate Pass Issuance"
+          description="Audit stock sent to or returned from retail clients and brand owners. Generates official Return Gate Pass PDFs with driver documentation and dual authorization sign-offs."
+          tip="Switch to 'Return to Warehouse Notes' or 'Sent to Client Notes' to view and download official Gate Pass PDFs."
+        />
+      </div>
 
       {/* Top-level tabs: Dispatched vs Returned */}
       <div className="flex items-center gap-2 border-b border-border">

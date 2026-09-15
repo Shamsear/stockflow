@@ -3,9 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { 
-  Tag, Package, Store, Users, FolderGit, 
+  Tag, Package, Store, Users,
   ArrowRight, ArrowDownLeft, ArrowUpRight, ShieldAlert, 
-  RefreshCw, TrendingUp, AlertTriangle
+  RefreshCw, TrendingUp, AlertTriangle, Calendar,
+  Undo2, RotateCcw, History, Trash2, AlertCircle
 } from 'lucide-react';
 import { requirePageAuth } from '@/lib/auth-guard';
 import Link from 'next/link';
@@ -52,11 +53,20 @@ export default async function DashboardPage() {
     { name: 'Staff', count: promoterCount, icon: Users, color: 'text-danger bg-danger/10 border-danger/20', href: '/dashboard/staff' },
   ];
 
-  const quickActions = [
-    { label: 'Receive Stock', desc: 'Log inbound inventory', href: '/dashboard/inbound', icon: ArrowDownLeft, color: 'text-success bg-success/10 border-success/20 hover:border-success/40' },
-    { label: 'Dispatch Stock', desc: 'Issue to store or staff', href: '/dashboard/outbound', icon: ArrowUpRight, color: 'text-primary bg-primary/10 border-primary/20 hover:border-primary/40' },
-    { label: 'Rebrand Items', desc: 'Swap product labels', href: '/dashboard/rebrand', icon: RefreshCw, color: 'text-secondary bg-secondary/10 border-secondary/20 hover:border-secondary/40' },
-    { label: 'Report Damage', desc: 'Log damaged/lost items', href: '/dashboard/damage', icon: ShieldAlert, color: 'text-danger bg-danger/10 border-danger/20 hover:border-danger/40' },
+  const dailyOps = [
+    { label: 'Receive Stock', desc: 'Log inbound container receipts', href: '/dashboard/inbound', icon: ArrowDownLeft, color: 'text-success bg-success/10 border-success/20 hover:border-success/40' },
+    { label: 'Dispatch Stock', desc: 'Issue orders to stores & staff', href: '/dashboard/outbound', icon: ArrowUpRight, color: 'text-primary bg-primary/10 border-primary/20 hover:border-primary/40' },
+    { label: 'Expiry Tracking', desc: 'FEFO shelf-life control', href: '/dashboard/expiry', icon: Calendar, color: 'text-warning bg-warning/10 border-warning/20 hover:border-warning/40' },
+    { label: 'Client Returns', desc: 'Track stock with clients', href: '/dashboard/client-returns', icon: Undo2, color: 'text-secondary bg-secondary/10 border-secondary/20 hover:border-secondary/40' },
+    { label: 'Store Returns', desc: 'Receive returned goods', href: '/dashboard/returns', icon: RotateCcw, color: 'text-success bg-success/10 border-success/20 hover:border-success/40' },
+    { label: 'Ledger Logs', desc: 'Full transaction audit trail', href: '/dashboard/transactions', icon: History, color: 'text-primary bg-primary/10 border-primary/20 hover:border-primary/40' },
+  ];
+
+  const stockControl = [
+    { label: 'Rebrand Items', desc: 'Swap product brand labels', href: '/dashboard/rebrand', icon: RefreshCw, color: 'text-secondary bg-secondary/10 border-secondary/20 hover:border-secondary/40' },
+    { label: 'Report Damage', desc: 'Quarantine damaged stock', href: '/dashboard/damage', icon: ShieldAlert, color: 'text-danger bg-danger/10 border-danger/20 hover:border-danger/40' },
+    { label: 'Report Loss', desc: 'Log missing or lost items', href: '/dashboard/loss', icon: AlertCircle, color: 'text-danger bg-danger/10 border-danger/20 hover:border-danger/40' },
+    { label: 'Mark as Used', desc: 'Consume staff-use stock', href: '/dashboard/used', icon: Trash2, color: 'text-warning bg-warning/10 border-warning/20 hover:border-warning/40' },
   ];
 
   return (
@@ -166,40 +176,70 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Actions & Alerts */}
-        <div className="flex flex-col gap-6 lg:col-span-1">
-          {/* Quick Actions Card */}
-          <div className="bg-surface border border-border rounded-xl p-5 flex flex-col gap-4">
+        {/* All Operations Panel */}
+        <div className="lg:col-span-1 flex flex-col gap-5">
+
+          {/* Daily Operations */}
+          <div className="bg-surface border border-border rounded-xl p-5 flex flex-col gap-3">
             <div className="flex items-center gap-2 pb-3 border-b border-border">
-              <ShieldAlert size={18} className="text-secondary" />
-              <h3 className="font-display font-bold text-base text-text-primary">Quick Actions</h3>
+              <ArrowUpRight size={18} className="text-primary" />
+              <h3 className="font-display font-bold text-base text-text-primary">Daily Operations</h3>
             </div>
-            
-            <div className="flex flex-col gap-2.5">
-              {quickActions.map((action) => {
+            <div className="flex flex-col gap-2">
+              {dailyOps.map((action) => {
                 const Icon = action.icon;
                 return (
-                  <Link 
-                    key={action.label} 
-                    href={action.href} 
+                  <Link
+                    key={action.label}
+                    href={action.href}
                     className="flex items-center justify-between p-3 bg-surface-elevated/40 border border-black/5 rounded-lg hover:border-primary/25 transition-all duration-200 group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center border ${action.color}`}>
-                        <Icon size={18} />
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center border flex-shrink-0 ${action.color}`}>
+                        <Icon size={16} />
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{action.label}</span>
-                        <span className="text-[11px] text-text-secondary mt-0.5">{action.desc}</span>
+                        <span className="text-[11px] text-text-secondary">{action.desc}</span>
                       </div>
                     </div>
-                    <ArrowRight size={14} className="text-text-muted group-hover:text-primary transition-colors duration-200" />
+                    <ArrowRight size={13} className="text-text-muted group-hover:text-primary transition-colors duration-200 flex-shrink-0" />
                   </Link>
                 );
               })}
             </div>
           </div>
 
+          {/* Stock Control */}
+          <div className="bg-surface border border-border rounded-xl p-5 flex flex-col gap-3">
+            <div className="flex items-center gap-2 pb-3 border-b border-border">
+              <ShieldAlert size={18} className="text-danger" />
+              <h3 className="font-display font-bold text-base text-text-primary">Stock Control</h3>
+            </div>
+            <div className="flex flex-col gap-2">
+              {stockControl.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <Link
+                    key={action.label}
+                    href={action.href}
+                    className="flex items-center justify-between p-3 bg-surface-elevated/40 border border-black/5 rounded-lg hover:border-primary/25 transition-all duration-200 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center border flex-shrink-0 ${action.color}`}>
+                        <Icon size={16} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{action.label}</span>
+                        <span className="text-[11px] text-text-secondary">{action.desc}</span>
+                      </div>
+                    </div>
+                    <ArrowRight size={13} className="text-text-muted group-hover:text-primary transition-colors duration-200 flex-shrink-0" />
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
 
         </div>
       </div>
