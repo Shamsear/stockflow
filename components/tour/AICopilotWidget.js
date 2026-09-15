@@ -404,14 +404,14 @@ export default function AICopilotWidget() {
         top: `${coords.top}px`,
         left: `${coords.left}px`,
       }}
-      className={`fixed z-[95] w-[calc(100vw-24px)] sm:w-[330px] md:w-[350px] transition-[opacity,transform] duration-200 ease-out pointer-events-auto select-none ${
-        isPositionReady ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1 scale-98 pointer-events-none'
+      className={`fixed z-[95] w-[calc(100vw-24px)] sm:w-[330px] md:w-[350px] transition-opacity duration-150 ease-out pointer-events-auto select-none ${
+        isPositionReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
       role="region"
       aria-label="Interactive Tour Cloud Callout"
     >
-      {/* Cloud Pointer Arrow Beak (Action Phase Only) */}
-      {stepPhase === 'action' && targetRect && (
+      {/* Cloud Pointer Arrow Beak */}
+      {targetRect && (
         <>
           {coords.placement === 'bottom' && (
             <div 
@@ -582,6 +582,11 @@ export default function AICopilotWidget() {
               </h4>
             </div>
 
+            {/* Value Explanation & Page Overview */}
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {currentStep.pageOverview || currentStep.explanation}
+            </p>
+
             {/* Action Pill Callout */}
             {currentStep.actionRequired && (
               <div className="flex items-start gap-2 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
@@ -596,11 +601,6 @@ export default function AICopilotWidget() {
                 </div>
               </div>
             )}
-
-            {/* Concise Value Explanation */}
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              {currentStep.explanation}
-            </p>
 
             {/* Subtle Contextual Note */}
             {currentStep.suggestion && (
@@ -621,24 +621,15 @@ export default function AICopilotWidget() {
               </button>
 
               <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  disabled={currentStepIndex === 0}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                >
-                  Back
-                </button>
-
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow hover:shadow-md"
-                  title="Next step"
-                >
-                  <span>{isLastStep ? 'Complete' : 'Next'}</span>
-                  <ChevronRight size={12} />
-                </button>
+                {currentStepIndex > 0 && (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    Back
+                  </button>
+                )}
               </div>
             </div>
           </div>
