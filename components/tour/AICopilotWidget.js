@@ -52,9 +52,7 @@ export default function AICopilotWidget() {
     skipTour,
     setIsMinimized,
     setIsChatOpen,
-    askQuestion,
-    stepPhase,
-    setStepPhase
+    askQuestion
   } = useTour();
 
   const [inputQuestion, setInputQuestion] = useState('');
@@ -87,33 +85,7 @@ export default function AICopilotWidget() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // PHASE 1: PAGE OVERVIEW PHASE
-    // Position comfortably in top-right area of workspace (or top on mobile) without covering center content
-    if (stepPhase === 'overview') {
-      const isMobile = vw < 768;
-      const popoverW = Math.min(popoverEl?.offsetWidth || 360, vw - 24);
-      const isLogin = pathname === '/login';
-
-      let topPos = isMobile ? 65 : 75;
-      let leftPos = isMobile ? Math.max(12, (vw - popoverW) / 2) : Math.max(16, vw - popoverW - 28);
-
-      // On /login on wide screens, place neatly over the left brand panel
-      if (isLogin && vw >= 1024) {
-        topPos = 120;
-        leftPos = Math.max(24, Math.round((vw * 0.5 - popoverW) / 2));
-      }
-
-      setCoords({
-        top: topPos,
-        left: leftPos,
-        placement: 'none',
-        arrowOffset: 0
-      });
-      setIsPositionReady(true);
-      return;
-    }
-
-    // PHASE 2: ACTION PHASE (Locked to target button)
+    // Locked to target button - keep hidden until measured
     if (!targetRect || targetRect.width === 0 || targetRect.height === 0) {
       setIsPositionReady(false);
       return;
@@ -207,17 +179,11 @@ export default function AICopilotWidget() {
       arrowOffset
     });
     setIsPositionReady(true);
-  }, [targetRect, isOnboardingOpen, stepPhase, pathname]);
+  }, [targetRect, isOnboardingOpen, pathname]);
 
   // High-Performance Layout Settling & rAF Scroll Tracking
   useEffect(() => {
-    // In action phase, hide initially until target DOM element has settled
-    if (stepPhase === 'action') {
-      setIsPositionReady(false);
-    } else {
-      // In overview phase or onboarding, update immediately
-      updatePosition();
-    }
+    updatePosition();
 
     let isCancelled = false;
     let scrollRaf = null;
@@ -236,13 +202,13 @@ export default function AICopilotWidget() {
       if (!isCancelled) {
         updatePosition();
       }
-    }, stepPhase === 'overview' ? 80 : 220);
+    }, 120);
 
     const backupTimer = setTimeout(() => {
       if (!isCancelled) {
         updatePosition();
       }
-    }, 450);
+    }, 350);
 
     window.addEventListener('resize', handleScroll, { passive: true });
     window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
@@ -255,13 +221,13 @@ export default function AICopilotWidget() {
       window.removeEventListener('resize', handleScroll);
       window.removeEventListener('scroll', handleScroll, { capture: true });
     };
-  }, [updatePosition, currentStepIndex, pathname, stepPhase, isChatOpen, isMinimized]);
+  }, [updatePosition, currentStepIndex, pathname, isChatOpen, isMinimized]);
 
   if (!isTourActive) return null;
   if (isPdfModalOpen) return null;
   if (!isOnboardingOpen && !currentStep) return null;
-  // In action phase, if target element has not been measured yet, keep hidden
-  if (!isOnboardingOpen && stepPhase === 'action' && !targetRect) return null;
+  // If target element has not been measured yet, keep hidden until settled
+  if (!isOnboardingOpen && !targetRect) return null;
 
   const handleSend = async (e) => {
     e?.preventDefault();
