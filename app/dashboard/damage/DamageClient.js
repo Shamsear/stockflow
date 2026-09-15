@@ -609,7 +609,7 @@ function DamageFormContent({ products, brands = [], initialItems = null, lockedT
       <div className="absolute top-0 right-0 pointer-events-none opacity-5 overflow-hidden">
         <AlertCircle size={180} />
       </div>
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-border">
+      <header data-tour="damage-header" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-border">
         <div className="flex items-center gap-4">
           <Link
             href={lockedType === 'LOST' ? '/dashboard/loss' : '/dashboard/damage'}

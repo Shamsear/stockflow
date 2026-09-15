@@ -51,7 +51,7 @@ export default function BrandsClient({ initialBrands }) {
       </div>
       
       {/* Page Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-border">
+      <header data-tour="brands-header" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-border">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-text-primary tracking-tight">
             Brands Portfolio

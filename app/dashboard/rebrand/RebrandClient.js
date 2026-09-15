@@ -625,7 +625,7 @@ export default function RebrandClient({ products, brands = [], stores = [] }) {
       <div className="absolute top-0 right-0 pointer-events-none opacity-5 overflow-hidden">
         <RefreshCw size={180} />
       </div>
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-border">
+      <header data-tour="rebrand-header" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-border">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/rebrand" className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-border bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors">
             <ArrowLeft size={16} />

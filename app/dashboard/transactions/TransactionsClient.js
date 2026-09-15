@@ -76,7 +76,7 @@ export default function TransactionsClient({
         <History size={250} />
       </div>
       {/* Header */}
-      <header className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 pb-5 border-b border-border">
+      <header data-tour="transactions-header" className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 pb-5 border-b border-border">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-text-primary tracking-tight">
             Inventory Ledger Feed

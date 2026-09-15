@@ -178,7 +178,7 @@ export default function StoresClient({ initialStores }) {
         <Store size={250} />
       </div>
       {/* Page Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-border">
+      <header data-tour="stores-header" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-border">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-text-primary tracking-tight">
             Outlets &amp; Stores

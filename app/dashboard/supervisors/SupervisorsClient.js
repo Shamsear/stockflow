@@ -51,7 +51,7 @@ export default function SupervisorsClient({ initialSupervisors }) {
       <div className="absolute top-0 right-0 pointer-events-none opacity-5 overflow-hidden">
         <UserCheck size={250} />
       </div>
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-border">
+      <header data-tour="supervisors-header" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-border">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-text-primary tracking-tight">
             Supervisors
