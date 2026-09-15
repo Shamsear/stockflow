@@ -10,11 +10,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="login-submit-btn"]',
     fallbackSelector: 'button[type="submit"]',
     stepNumber: '01',
-    title: 'Customizable Setup & Secure Live Demo Login',
+    title: 'Log In to Demo Sandbox',
     actionRequired: 'Click [Enter Live Demo Dashboard]',
-    actionInstruction: 'Click the green button below to enter your live sandbox.',
-    explanation: 'StockFlow WMS is 100% customizable for GCC logistics. Everything can be tailored to your operations: unlimited users, custom access roles (clerks, pickers, drivers, brand supervisors), customizable bay/rack numbering (dry, chilled, frozen), and bilingual delivery notes with your CR and tax numbers.',
-    suggestion: 'In live production, we can integrate with your single sign-on (SSO) or biometric warehouse entry tablets.',
+    actionInstruction: 'Click the green button to start your interactive sandbox session.',
+    explanation: 'StockFlow WMS is 100% customizable for GCC operations: unlimited users, custom access roles, cold-storage bays, and bilingual delivery slips with your CR and tax numbers.',
+    suggestion: 'Production setups include single sign-on (SSO) and biometric entry tablet support.',
     nextRoute: '/dashboard'
   },
   {
@@ -23,11 +23,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="nav-inbound"]',
     fallbackSelector: 'nav a[href="/dashboard/inbound"]',
     stepNumber: '02',
-    title: 'Central Command Center & Real-Time Metrics',
-    actionRequired: 'Click [Inbound (Receive)] in the sidebar',
-    actionInstruction: 'Click the Inbound link highlighted in the sidebar.',
-    explanation: 'This is your central command center. StockFlow segregates multi-brand inventory in real time across dry storage, cold rooms, and client consignments. You can monitor quick metric cards: Total Products, Active Brands, Store Outlets, and Low Stock Alerts.',
-    suggestion: 'Let us now record an incoming supplier shipment or container at dock receiving.',
+    title: 'Central Command Center',
+    actionRequired: 'Click [Inbound (Receive)] in sidebar',
+    actionInstruction: 'Click Inbound highlighted in the sidebar.',
+    explanation: 'Monitor live multi-brand stock across dry storage and cold rooms in real time with quick KPI cards for products, brands, and low-stock alerts.',
+    suggestion: 'Let us now record an incoming supplier container at dock receiving.',
     nextRoute: '/dashboard/inbound'
   },
   {
@@ -36,11 +36,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="inbound-new-btn"]',
     fallbackSelector: 'header a[href="/dashboard/inbound/new"]',
     stepNumber: '03',
-    title: 'Dock Container Receiving & PO Verification',
+    title: 'Dock Container Receiving',
     actionRequired: 'Click [+ New Inbound Receipt]',
     actionInstruction: 'Click the New Inbound button to open the receiving screen.',
-    explanation: 'Incoming shipments from sea containers or local suppliers arrive here. Clerks verify received cartons against Purchase Orders, scan barcodes, record batch expiration dates, and assign goods to storage racks or cold bays.',
-    suggestion: 'Notice the camera barcode scanner option: warehouse staff can scan directly using any smartphone or Zebra terminal.',
+    explanation: 'Incoming shipments from sea containers or local suppliers arrive here. Clerks verify cartons against POs, scan barcodes, and assign goods to racks or cold bays.',
+    suggestion: 'Supports Zebra/Honeywell handhelds and instant QR smartphone pairing.',
     nextRoute: '/dashboard/inbound/new'
   },
   {
@@ -49,11 +49,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="nav-expiry"]',
     fallbackSelector: 'nav a[href="/dashboard/expiry"]',
     stepNumber: '04',
-    title: 'Staging, Barcode Scanning & Expiry Logging',
-    actionRequired: 'Click [Expiry Tracking] in the sidebar',
+    title: 'Barcode & Batch Expiry Capture',
+    actionRequired: 'Click [Expiry Tracking] in sidebar',
     actionInstruction: 'Click Expiry Tracking highlighted in the sidebar.',
-    explanation: 'On this receiving form, clerks enter the supplier, PO number, vehicle plate, and scan carton barcodes. The system logs batch manufacturing and expiry dates immediately to enforce First-Expired, First-Out (FEFO) rules.',
-    suggestion: 'Now let us inspect how StockFlow protects distributors from shelf-life penalties and retail rejection.',
+    explanation: 'On this receiving form, clerks enter supplier, PO number, vehicle plate, and scan barcodes. Expiry dates are recorded immediately for FEFO compliance.',
+    suggestion: 'Next, see how StockFlow protects you from retail rejection penalties.',
     nextRoute: '/dashboard/expiry'
   },
   {
@@ -62,11 +62,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="nav-outbound"]',
     fallbackSelector: 'nav a[href="/dashboard/outbound"]',
     stepNumber: '05',
-    title: 'FEFO Expiry Date & Shelf-Life Protection',
-    actionRequired: 'Click [Outbound (Dispatch)] in the sidebar',
+    title: 'FEFO Shelf-Life Protection',
+    actionRequired: 'Click [Outbound (Dispatch)] in sidebar',
     actionInstruction: 'Click Outbound Dispatch highlighted in the sidebar.',
-    explanation: 'First-Expired, First-Out automatically ensures older compliant batches are picked first. In Qatar and the UAE, retail hypermarkets like Carrefour, Lulu, and Al Meera reject goods with under six months shelf life. StockFlow flags approaching batches with color-coded risk alerts and locks expired items.',
-    suggestion: 'Now let us fulfill a retail store order and dispatch goods with an official delivery note.',
+    explanation: 'Automatically prioritizes older compliant stock. Regional hypermarkets (Carrefour, Lulu, Al Meera) reject items with under six months shelf life.',
+    suggestion: 'Now let us pick and dispatch stock for a retail hypermarket order.',
     nextRoute: '/dashboard/outbound'
   },
   {
@@ -75,11 +75,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="tab-delivery_notes"]',
     fallbackSelector: '[data-tour="delivery-notes-table"]',
     stepNumber: '06',
-    title: 'Store Picking & Grouped Delivery Notes',
-    actionRequired: 'Click the [Grouped Delivery Notes] tab',
-    actionInstruction: 'Click the Grouped Delivery Notes tab above the table.',
-    explanation: 'When retail stores order stock, pickers retrieve items matching the oldest compliant FEFO batches. Every dispatch logs the delivery vehicle, driver, and destination outlet. Let us switch to the Grouped Delivery Notes tab to inspect official dispatch slips.',
-    suggestion: 'Delivery drivers and fleet supervisors can also be notified automatically via SMS or WhatsApp as soon as an order is staged.',
+    title: 'Store Picking & Grouped Delivery Slips',
+    actionRequired: 'Click [Grouped Delivery Notes] tab',
+    actionInstruction: 'Click the tab highlighted above the dispatch table.',
+    explanation: 'Pickers retrieve oldest compliant batches, assign delivery vehicles, and stage pallets for fleet drivers.',
+    suggestion: 'Drivers receive automated dispatch alerts via SMS or WhatsApp upon staging.',
     nextRoute: '/dashboard/outbound?tab=delivery_notes'
   },
   {
@@ -88,11 +88,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="dn-preview-btn"]',
     fallbackSelector: 'button[title="View PDF"]',
     stepNumber: '07',
-    title: 'Official Delivery Note PDF Inspection',
-    actionRequired: 'Click [View PDF] on the delivery note',
+    title: 'Official Delivery Note PDF',
+    actionRequired: 'Click [View PDF] on delivery slip',
     actionInstruction: 'Click the View PDF button highlighted on the first dispatch record.',
-    explanation: 'Every dispatch produces an official PDF Delivery Note. It contains your company header, destination branch, driver details, product list with lot numbers, and dedicated dual signature lines for proof of delivery.',
-    suggestion: 'Click View PDF now to preview the exact document inside our interactive dialog.',
+    explanation: 'Every dispatch automatically produces an official Delivery Note PDF with store details, product batch numbers, and dual signature lines.',
+    suggestion: 'Click View PDF to preview the exact document inside our modal.',
     nextRoute: null
   },
   {
@@ -101,11 +101,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="modal-continue-btn"]',
     fallbackSelector: 'button',
     stepNumber: '08',
-    title: 'Delivery Note Preview & Proof of Delivery (POD)',
-    actionRequired: 'Inspect the document & click [Continue to Client Returns]',
+    title: 'Proof of Delivery (POD) Preview',
+    actionRequired: 'Click [Continue to Client Returns]',
     actionInstruction: 'Click the button in the bottom right of the modal to continue.',
-    explanation: 'Here is your official Delivery Note: Commercial Registration (CR), Tax ID, destination store, driver assignment, batch expiration dates, and dual signature lines. Store managers sign this slip upon receiving.',
-    suggestion: 'Now let us look at how store returns and damaged stock are isolated from good inventory.',
+    explanation: 'Inspect your official delivery note: Commercial Registration (CR), Tax ID, destination store, driver assignment, and dual signature lines.',
+    suggestion: 'Next, see how client returns and damaged items are isolated.',
     nextRoute: '/dashboard/client-returns'
   },
   {
@@ -115,10 +115,10 @@ const TOUR_STEPS = [
     fallbackSelector: 'nav a[href="/dashboard/reports"]',
     stepNumber: '09',
     title: 'Client Returns & Damage Quarantine',
-    actionRequired: 'Click [Reports] in the sidebar',
+    actionRequired: 'Click [Reports] in sidebar',
     actionInstruction: 'Click Reports highlighted in the sidebar.',
-    explanation: 'When retail outlets return unsold or damaged items, warehouse supervisors inspect them here. Good items return to active stock; damaged or expired goods are segregated into Damage Quarantine with photo evidence. The system generates an official Return Gate Pass for the driver.',
-    suggestion: 'Finally, let us review executive inventory reconciliation and multi-brand reporting.',
+    explanation: 'Inspect store returns: good items return to active stock; damaged or expired goods move to Damage Quarantine with photographic records.',
+    suggestion: 'Finally, review executive stock reconciliation and brand reports.',
     nextRoute: '/dashboard/reports'
   },
   {
@@ -127,11 +127,11 @@ const TOUR_STEPS = [
     targetSelector: '[data-tour="reports-export-btns"]',
     fallbackSelector: 'button',
     stepNumber: '10',
-    title: 'Multi-Brand Stock Ledger & Excel Export',
+    title: 'Multi-Brand Stock Reconciliation',
     actionRequired: 'Click [Export to Excel]',
     actionInstruction: 'Click the Export button to download the live multi-brand stock ledger.',
-    explanation: 'This central ledger provides real-time stock reconciliation segregated across five statuses: In Warehouse, Issued to Outlets, In Use, Damage Quarantine, and With Clients. Filter by brand or category and export clean Excel spreadsheets with one click.',
-    suggestion: 'StockFlow can be configured to automatically email daily stock reconciliation spreadsheets to brand principals every morning.',
+    explanation: 'Real-time stock reconciliation segregated across five statuses: In Warehouse, Issued, In Use, Damage Quarantine, and With Clients.',
+    suggestion: 'Export formatted Excel spreadsheets with one click.',
     nextRoute: null
   }
 ];
