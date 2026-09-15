@@ -21,6 +21,14 @@ export default function OutboundLedgerClient({ transactions = [], totalCount = 0
   const { isTourActive, openPdfModal } = tour || {};
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'transactions');
 
+  // Keep activeTab synced with URL searchParams (e.g. ?tab=delivery_notes)
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && (tabFromUrl === 'transactions' || tabFromUrl === 'delivery_notes') && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
   const changeTab = (tab) => {
     setActiveTab(tab);
     const params = new URLSearchParams(searchParams.toString());

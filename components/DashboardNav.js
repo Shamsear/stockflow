@@ -62,7 +62,6 @@ const navSections = [
       { name: 'Brands', href: '/dashboard/brands', icon: Tag },
       { name: 'Stores', href: '/dashboard/stores', icon: Store },
       { name: 'Supervisors', href: '/dashboard/supervisors', icon: UserCheck },
-      { name: 'Visitor Telemetry', href: '/admin', icon: Activity },
     ],
   },
   {

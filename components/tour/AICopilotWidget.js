@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { useTour } from './TourContext';
 import { 
   Compass, 
@@ -17,7 +18,10 @@ import {
   Building2, 
   MapPin, 
   ArrowRight,
-  MousePointerClick
+  MousePointerClick,
+  CheckCircle2,
+  Sparkles,
+  Layers
 } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
@@ -28,6 +32,7 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export default function AICopilotWidget() {
+  const pathname = usePathname();
   const {
     steps,
     currentStep,
@@ -47,7 +52,9 @@ export default function AICopilotWidget() {
     skipTour,
     setIsMinimized,
     setIsChatOpen,
-    askQuestion
+    askQuestion,
+    stepPhase,
+    setStepPhase
   } = useTour();
 
   const [inputQuestion, setInputQuestion] = useState('');
@@ -61,19 +68,8 @@ export default function AICopilotWidget() {
   const chatBottomRef = useRef(null);
 
   // Cloud comment placement & coordinate state
-  const [coords, setCoords] = useState({ top: 120, left: 120, placement: 'left', arrowOffset: 40 });
-
-  useEffect(() => {
-    if (visitorProfile?.name) setProfileName(visitorProfile.name);
-    if (visitorProfile?.company) setProfileCompany(visitorProfile.company);
-    if (visitorProfile?.location) setProfileLocation(visitorProfile.location);
-  }, [visitorProfile]);
-
-  useEffect(() => {
-    if (isChatOpen && chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatMessages, isChatOpen]);
+  const [coords, setCoords] = useState({ top: 0, left: 0, placement: 'left', arrowOffset: 40 });
+  const [isPositionReady, setIsPositionReady] = useState(false);
 
   // ═══════════════════════════════════════════════════════════════
   // Dynamic Cloud Callout Positioning Calculation
@@ -81,8 +77,9 @@ export default function AICopilotWidget() {
   const updatePosition = useCallback(() => {
     if (typeof window === 'undefined') return;
 
-    // Center if onboarding without targetRect
-    if (isOnboardingOpen && !targetRect) {
+    // Center if onboarding
+    if (isOnboardingOpen) {
+      setIsPositionReady(true);
       return;
     }
 
@@ -90,27 +87,41 @@ export default function AICopilotWidget() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    if (!popoverEl || !targetRect) {
-      // Fallback: bottom-right
+    // PHASE 1: PAGE OVERVIEW PHASE
+    // Position comfortably in top-right area of workspace (or top on mobile) without covering center content
+    if (stepPhase === 'overview') {
+      const isMobile = vw < 768;
+      const popoverW = Math.min(popoverEl?.offsetWidth || 360, vw - 24);
+      const topPos = isMobile ? 65 : 75;
+      const leftPos = isMobile ? Math.max(12, (vw - popoverW) / 2) : Math.max(16, vw - popoverW - 28);
+
       setCoords({
-        top: Math.max(16, vh - 280),
-        left: Math.max(16, vw - 360),
-        placement: 'bottom',
-        arrowOffset: 160
+        top: topPos,
+        left: leftPos,
+        placement: 'none',
+        arrowOffset: 0
       });
+      setIsPositionReady(true);
+      return;
+    }
+
+    // PHASE 2: ACTION PHASE (Locked to target button)
+    if (!targetRect || targetRect.width === 0 || targetRect.height === 0) {
+      setIsPositionReady(false);
       return;
     }
 
     // Auto measure card size
-    const popoverW = Math.min(popoverEl.offsetWidth || 340, vw - 24);
-    const popoverH = popoverEl.offsetHeight || 220;
+    const popoverW = Math.min(popoverEl?.offsetWidth || 340, vw - 24);
+    const popoverH = popoverEl?.offsetHeight || 220;
 
-    const tTop = targetRect.top - window.scrollY;
-    const tBottom = tTop + targetRect.height;
-    const tLeft = targetRect.left - window.scrollX;
-    const tRight = tLeft + targetRect.width;
-    const tCenterX = tLeft + targetRect.width / 2;
-    const tCenterY = tTop + targetRect.height / 2;
+    // Pure viewport coordinates directly from targetRect
+    const tTop = targetRect.top;
+    const tBottom = targetRect.top + targetRect.height;
+    const tLeft = targetRect.left;
+    const tRight = targetRect.left + targetRect.width;
+    const tCenterX = targetRect.left + targetRect.width / 2;
+    const tCenterY = targetRect.top + targetRect.height / 2;
 
     const gap = 14;
     const pad = 16;
@@ -122,7 +133,7 @@ export default function AICopilotWidget() {
 
     let placement = 'bottom';
 
-    // On narrow screens (mobile / tablet portrait), prefer bottom or top
+    // On narrow screens, prefer bottom or top
     const isMobile = vw < 768;
 
     if (isMobile) {
@@ -134,8 +145,7 @@ export default function AICopilotWidget() {
         placement = spaceBottom >= spaceTop ? 'bottom' : 'top';
       }
     } else {
-      // On desktop, evaluate left / right / bottom / top
-      // If target is in right half of screen (like login button or table action), left placement is ideal!
+      // Desktop: evaluate left / right / bottom / top
       if (spaceLeft >= popoverW + gap && tLeft > vw * 0.4) {
         placement = 'left';
       } else if (spaceRight >= popoverW + gap && tRight < vw * 0.6) {
@@ -145,7 +155,6 @@ export default function AICopilotWidget() {
       } else if (spaceTop >= popoverH + gap) {
         placement = 'top';
       } else {
-        // Fallback to whichever direction has greatest space
         const max = Math.max(spaceLeft, spaceRight, spaceBottom, spaceTop);
         if (max === spaceLeft) placement = 'left';
         else if (max === spaceRight) placement = 'right';
@@ -189,25 +198,57 @@ export default function AICopilotWidget() {
       placement,
       arrowOffset
     });
+    setIsPositionReady(true);
   }, [targetRect, isOnboardingOpen]);
 
+  // High-Performance Layout Settling & rAF Scroll Tracking
   useEffect(() => {
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition);
-    const timer = setTimeout(updatePosition, 80);
-    const timer2 = setTimeout(updatePosition, 300);
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition);
-      clearTimeout(timer);
-      clearTimeout(timer2);
+    // Hide initially on step / route change until DOM has settled
+    setIsPositionReady(false);
+
+    let isCancelled = false;
+    let scrollRaf = null;
+
+    const handleScroll = () => {
+      if (scrollRaf === null) {
+        scrollRaf = requestAnimationFrame(() => {
+          updatePosition();
+          scrollRaf = null;
+        });
+      }
     };
-  }, [updatePosition, currentStepIndex, isChatOpen, isMinimized]);
+
+    // Buffer to let Next.js finish mounting page, tables and banners
+    const settleTimer = setTimeout(() => {
+      if (!isCancelled) {
+        updatePosition();
+      }
+    }, stepPhase === 'overview' ? 180 : 220);
+
+    const backupTimer = setTimeout(() => {
+      if (!isCancelled) {
+        updatePosition();
+      }
+    }, 450);
+
+    window.addEventListener('resize', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(settleTimer);
+      clearTimeout(backupTimer);
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+    };
+  }, [updatePosition, currentStepIndex, pathname, stepPhase, isChatOpen, isMinimized]);
 
   if (!isTourActive) return null;
   if (isPdfModalOpen) return null;
   if (!isOnboardingOpen && !currentStep) return null;
+  // In action phase, if target element has not been measured yet, keep hidden
+  if (!isOnboardingOpen && stepPhase === 'action' && !targetRect) return null;
 
   const handleSend = async (e) => {
     e?.preventDefault();
@@ -384,12 +425,14 @@ export default function AICopilotWidget() {
         top: `${coords.top}px`,
         left: `${coords.left}px`,
       }}
-      className="fixed z-[95] w-[calc(100vw-24px)] sm:w-[330px] md:w-[350px] transition-all duration-200 pointer-events-auto select-none"
+      className={`fixed z-[95] w-[calc(100vw-24px)] sm:w-[330px] md:w-[350px] transition-[opacity,transform] duration-200 ease-out pointer-events-auto select-none ${
+        isPositionReady ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1 scale-98 pointer-events-none'
+      }`}
       role="region"
       aria-label="Interactive Tour Cloud Callout"
     >
-      {/* Cloud Pointer Arrow Beak */}
-      {targetRect && (
+      {/* Cloud Pointer Arrow Beak (Action Phase Only) */}
+      {stepPhase === 'action' && targetRect && (
         <>
           {coords.placement === 'bottom' && (
             <div 

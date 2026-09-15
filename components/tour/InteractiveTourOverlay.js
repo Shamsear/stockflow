@@ -18,11 +18,21 @@ export default function InteractiveTourOverlay() {
     };
 
     updateSize();
-    window.addEventListener('resize', updateSize);
-    window.addEventListener('scroll', updateSize);
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          updateSize();
+          rafId = null;
+        });
+      }
+    };
+    window.addEventListener('resize', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
     return () => {
-      window.removeEventListener('resize', updateSize);
-      window.removeEventListener('scroll', updateSize);
+      if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('scroll', handleScroll, { capture: true });
     };
   }, []);
 
@@ -42,25 +52,26 @@ export default function InteractiveTourOverlay() {
     return 14;
   }, [targetRect?.borderRadius]);
 
-  if (!isTourActive) return null;
-  // If delivery note modal is open, suppress spotlight overlay
-  if (isPdfModalOpen) return null;
+  if (!isTourActive || isPdfModalOpen || !targetRect) return null;
 
-  // Precision padding: 4px tight hugging (no oversized gaping margin)
+  // Precision padding: 4px tight hugging
   const padding = 4;
-  const rect = targetRect
+  
+  // Use pure viewport coordinates directly from targetRect
+  const rect = targetRect && targetRect.width > 0 && targetRect.height > 0
     ? {
-        top: Math.max(0, targetRect.top - viewport.scrollY - padding),
-        left: Math.max(0, targetRect.left - viewport.scrollX - padding),
-        width: Math.min(viewport.width, targetRect.width + padding * 2),
-        height: Math.min(viewport.height, targetRect.height + padding * 2),
+        top: Math.round(targetRect.top - padding),
+        left: Math.round(targetRect.left - padding),
+        width: Math.round(targetRect.width + padding * 2),
+        height: Math.round(targetRect.height + padding * 2),
+        isOffscreen: targetRect.bottom < 0 || targetRect.top > viewport.height
       }
     : null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[80] transition-opacity duration-300">
       {/* SVG Mask Cutout with Concentric Rounded Rect */}
-      {rect && rect.width > 0 && rect.height > 0 ? (
+      {rect && !rect.isOffscreen && rect.width > 0 && rect.height > 0 ? (
         <svg
           className="fixed inset-0 w-full h-full pointer-events-none"
           width="100%"
@@ -98,9 +109,9 @@ export default function InteractiveTourOverlay() {
       )}
 
       {/* Target Highlight Container: Precision Luminous Frame */}
-      {rect && rect.width > 0 && rect.height > 0 && (
+      {rect && !rect.isOffscreen && rect.width > 0 && rect.height > 0 && (
         <div
-          className="fixed pointer-events-none z-[85] transition-all duration-200"
+          className="fixed pointer-events-none z-[85] transition-opacity duration-200"
           style={{
             top: `${rect.top}px`,
             left: `${rect.left}px`,

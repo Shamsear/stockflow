@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -21,12 +21,56 @@ import {
   ChevronRight,
   ExternalLink,
   HelpCircle,
-  FileText
+  FileText,
+  Trash2,
+  Loader2
 } from 'lucide-react';
+import ExportToExcel from '@/components/ExportToExcel';
+
+// Format time in the user's local computer timezone
+function formatLocalTime(isoString) {
+  if (!isoString) return '—';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } catch {
+    return String(isoString);
+  }
+}
+
+function formatLocalDateFull(isoString) {
+  if (!isoString) return '—';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } catch {
+    return String(isoString);
+  }
+}
 
 export default function AdminAnalyticsClient({ initialData }) {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState(initialData);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'COMPLETED' | 'WHATSAPP' | 'CHATTED'
@@ -35,6 +79,72 @@ export default function AdminAnalyticsClient({ initialData }) {
   const [selectedSessionForChat, setSelectedSessionForChat] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
+
+  const [deletingId, setDeletingId] = useState(null);
+  const [isClearingAll, setIsClearingAll] = useState(false);
+
+  const handleDeleteSession = async (sessionId) => {
+    if (!window.confirm('Delete this visitor session and its telemetry records?')) {
+      return;
+    }
+    setDeletingId(sessionId);
+    try {
+      const res = await fetch(`/api/admin/sessions?id=${encodeURIComponent(sessionId)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (json.success) {
+        setData((prev) => ({
+          ...prev,
+          recentSessions: (prev.recentSessions || []).filter((s) => s.id !== sessionId),
+          kpis: {
+            ...prev.kpis,
+            totalVisitors: Math.max(0, (prev.kpis?.totalVisitors || 1) - 1),
+          },
+        }));
+      }
+    } catch (err) {
+      alert('Failed to delete session: ' + err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleClearAllSessions = async () => {
+    if (
+      !window.confirm(
+        'WARNING: Are you sure you want to permanently delete ALL demo visitor sessions, analytics, and chat logs? This cannot be undone.'
+      )
+    ) {
+      return;
+    }
+    setIsClearingAll(true);
+    try {
+      const res = await fetch('/api/admin/sessions?all=true', {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (json.success) {
+        setData((prev) => ({
+          ...prev,
+          recentSessions: [],
+          kpis: {
+            totalVisitors: 0,
+            completedTourCount: 0,
+            completionRate: 0,
+            whatsAppClicks: 0,
+            conversionRate: 0,
+            averageRating: 0,
+            ratedSessionsCount: 0,
+          },
+        }));
+      }
+    } catch (err) {
+      alert('Failed to clear sessions: ' + err.message);
+    } finally {
+      setIsClearingAll(false);
+    }
+  };
 
   const { kpis, funnel, geography, devices, recentSessions } = data || {};
 
@@ -127,6 +237,44 @@ export default function AdminAnalyticsClient({ initialData }) {
     document.body.removeChild(link);
   };
 
+  // Prepare Comprehensive Data for ExportToExcel
+  const excelData = (filteredSessions || []).map((s) => {
+    const completedCount = Math.min((s.completedSteps || []).length, 10);
+    return {
+      id: s.id,
+      leadName: s.leadName || 'Anonymous Visitor',
+      leadCompany: s.leadCompany || '---',
+      location: `${s.city ? s.city + ', ' : ''}${s.country || 'Unknown'}`,
+      deviceType: s.deviceType || 'Desktop',
+      startedAt: isMounted ? formatLocalDateFull(s.startedAt) : (s.startedAt || '—'),
+      lastActiveAt: isMounted ? formatLocalDateFull(s.lastActiveAt) : (s.lastActiveAt || '—'),
+      progress: `${completedCount} of 10 steps`,
+      completedTour: s.completedTour ? 'YES' : 'NO',
+      rating: s.satisfactionRating ? `${s.satisfactionRating} / 5` : 'No rating',
+      feedbackComment: s.feedbackComment || '',
+      clickedWhatsApp: s.clickedWhatsApp ? 'YES' : 'NO',
+      messagesCount: s.messagesCount || 0,
+      completedSteps: (s.completedSteps || []).join(', '),
+    };
+  });
+
+  const excelColumns = [
+    { header: 'Session ID', key: 'id', width: 22 },
+    { header: 'Visitor Name', key: 'leadName', width: 20 },
+    { header: 'Company', key: 'leadCompany', width: 20 },
+    { header: 'Location', key: 'location', width: 22 },
+    { header: 'Device', key: 'deviceType', width: 14 },
+    { header: 'Started At (Local Time)', key: 'startedAt', width: 24 },
+    { header: 'Last Active (Local Time)', key: 'lastActiveAt', width: 24 },
+    { header: 'Tour Progress', key: 'progress', width: 20 },
+    { header: 'Completed Tour', key: 'completedTour', width: 16 },
+    { header: 'Satisfaction Rating', key: 'rating', width: 18 },
+    { header: 'Feedback Comments', key: 'feedbackComment', width: 30 },
+    { header: 'WhatsApp Contact', key: 'clickedWhatsApp', width: 18 },
+    { header: 'Questions Count', key: 'messagesCount', width: 16 },
+    { header: 'Completed Steps List', key: 'completedSteps', width: 35 },
+  ];
+
   const totalVisitorsCount = kpis?.totalVisitors || 1;
 
   return (
@@ -161,14 +309,43 @@ export default function AdminAnalyticsClient({ initialData }) {
             <span>Refresh</span>
           </button>
 
+          <ExportToExcel
+            data={excelData}
+            columns={excelColumns}
+            filename="StockFlow-Visitor-Analytics"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
+          />
+
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-surface border border-border hover:bg-surface-elevated text-text-secondary hover:text-text-primary rounded-lg text-xs font-semibold transition-colors"
           >
             <Download size={14} />
-            <span>Export CSV</span>
+            <span>CSV</span>
           </button>
+
+          {(recentSessions || []).length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAllSessions}
+              disabled={isClearingAll}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+              title="Clear all demo sessions"
+            >
+              {isClearingAll ? (
+                <>
+                  <Loader2 size={13} className="animate-spin" />
+                  <span>Clearing...</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 size={13} />
+                  <span>Clear All Data</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -404,14 +581,15 @@ export default function AdminAnalyticsClient({ initialData }) {
                 <th className="py-3 px-4">Walkthrough Progress</th>
                 <th className="py-3 px-4">Satisfaction &amp; Feedback</th>
                 <th className="py-3 px-4">WhatsApp Contact</th>
-                <th className="py-3 px-4">Last Active</th>
-                <th className="py-3 px-4 text-right">Inquiries</th>
+                <th className="py-3 px-4">Last Active (Local)</th>
+                <th className="py-3 px-4 text-center">Inquiries</th>
+                <th className="py-3 px-4 text-right w-16">Delete</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-text-primary">
               {filteredSessions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-text-muted">
+                  <td colSpan={8} className="py-12 text-center text-text-muted">
                     No visitor sessions matching the current filter.
                   </td>
                 </tr>
@@ -419,15 +597,7 @@ export default function AdminAnalyticsClient({ initialData }) {
                 filteredSessions.map((s) => {
                   const completedCount = (s.completedSteps || []).length;
                   const hasQuestions = s.messagesCount > 0;
-                  const timeFormatted = s.lastActiveAt
-                    ? new Date(s.lastActiveAt).toLocaleString('en-AE', {
-                        timeZone: 'Asia/Dubai',
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })
-                    : '—';
+                  const timeFormatted = isMounted ? formatLocalTime(s.lastActiveAt) : '—';
 
                   return (
                     <tr key={s.id} className="hover:bg-surface-elevated/20 transition-colors">
@@ -457,7 +627,7 @@ export default function AdminAnalyticsClient({ initialData }) {
                             }`}
                           />
                           <span className="font-mono text-xs">
-                            {completedCount} of 5 steps
+                            {Math.min(completedCount, 10)} of 10 steps
                           </span>
                           {s.completedTour && (
                             <span className="text-[11px] text-emerald-600 font-semibold">
@@ -499,12 +669,12 @@ export default function AdminAnalyticsClient({ initialData }) {
                       </td>
 
                       {/* Last Active */}
-                      <td className="py-3 px-4 text-text-secondary whitespace-nowrap text-[11px]">
+                      <td className="py-3 px-4 text-text-secondary whitespace-nowrap text-[11px]" suppressHydrationWarning>
                         {timeFormatted}
                       </td>
 
-                      {/* Actions */}
-                      <td className="py-3 px-4 text-right">
+                      {/* Inquiries */}
+                      <td className="py-3 px-4 text-center">
                         {hasQuestions ? (
                           <button
                             type="button"
@@ -517,6 +687,24 @@ export default function AdminAnalyticsClient({ initialData }) {
                         ) : (
                           <span className="text-text-muted text-[11px]">None</span>
                         )}
+                      </td>
+
+                      {/* Delete Session */}
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSession(s.id)}
+                          disabled={deletingId === s.id}
+                          className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors disabled:opacity-50"
+                          title="Delete this session"
+                          aria-label="Delete session"
+                        >
+                          {deletingId === s.id ? (
+                            <Loader2 size={13} className="animate-spin text-red-600" />
+                          ) : (
+                            <Trash2 size={13} />
+                          )}
+                        </button>
                       </td>
                     </tr>
                   );
