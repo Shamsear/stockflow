@@ -44,6 +44,7 @@ export default function TabNav({
       {tabs.map((tab) => (
         <button
           key={tab.key}
+          data-tour={tab.tourId || `tab-${tab.key}`}
           className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-colors ${
             activeTab === tab.key
               ? 'border-primary text-primary'

@@ -100,10 +100,12 @@ export default function DashboardNav({ collapsed }) {
                   : pathname.startsWith(item.href);
               }
               
+              const tourKey = item.href === '/dashboard' ? 'overview' : item.href.replace('/dashboard/', '');
               return (
                 <Link 
                   key={item.href} 
-                  href={item.href} 
+                  href={item.href}
+                  data-tour={`nav-${tourKey}`}
                   className={`flex items-center rounded-lg text-sm font-semibold transition-colors duration-200 group relative has-tooltip
                     ${collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5 gap-3'}
                     ${isActive 

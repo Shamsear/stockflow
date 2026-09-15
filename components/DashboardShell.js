@@ -10,10 +10,6 @@ import PushSubscriptionBtn from '@/components/PushSubscriptionBtn';
 import Logo from '@/components/Logo';
 import DemoGuideModal from '@/components/DemoGuideModal';
 import { PanelLeftClose, PanelLeftOpen, LogOut, Menu, X, Loader2, BookOpen } from 'lucide-react';
-import { TourProvider } from '@/components/tour/TourContext';
-import InteractiveTourOverlay from '@/components/tour/InteractiveTourOverlay';
-import AICopilotWidget from '@/components/tour/AICopilotWidget';
-import TourEndModal from '@/components/tour/TourEndModal';
 import TourTriggerButton from '@/components/tour/TourTriggerButton';
 
 export default function DashboardShell({ user, children }) {
@@ -49,8 +45,7 @@ export default function DashboardShell({ user, children }) {
   };
 
   return (
-    <TourProvider>
-      <div className="h-[100dvh] overflow-hidden flex flex-col bg-background text-text-primary relative">
+    <div className="h-[100dvh] overflow-hidden flex flex-col bg-background text-text-primary relative">
       {/* Top Live Demo Quick Bar */}
       <div className="bg-slate-900 text-white px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between text-xs border-b border-slate-800 z-50 shrink-0">
         <div className="flex items-center gap-2">
@@ -268,12 +263,7 @@ export default function DashboardShell({ user, children }) {
         onClose={() => setShowDemoGuide(false)} 
       />
 
-      {/* Interactive Tour Spotlight, AI Assistant Card, and Completion Dialog */}
-      <InteractiveTourOverlay />
-      <AICopilotWidget />
-      <TourEndModal />
       </div>
     </div>
-    </TourProvider>
   );
 }

@@ -11,11 +11,14 @@ import ExportToExcel from '@/components/ExportToExcel';
 import TabNav from '@/components/TabNav';
 import PageHeader from '@/components/PageHeader';
 import ModuleOrientationBanner from '@/components/ModuleOrientationBanner';
+import { useTour } from '@/components/tour/TourContext';
 
 export default function OutboundLedgerClient({ transactions = [], totalCount = 0, totalPages = 1, page = 1, entityNames = {}, stores = [], supervisorNames = {} }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const tour = useTour();
+  const { isTourActive, openPdfModal } = tour || {};
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'transactions');
 
   const changeTab = (tab) => {
@@ -430,8 +433,18 @@ export default function OutboundLedgerClient({ transactions = [], totalCount = 0
                           </button>
                         )}
                         <button
+                          data-tour="dn-preview-btn"
                           onClick={(e) => {
                             e.stopPropagation();
+                            if (isTourActive && openPdfModal) {
+                              openPdfModal({
+                                deliveryNote: group.deliveryNote,
+                                storeName: group.storeName,
+                                timestamp: group.timestamp,
+                                items: group.items
+                              });
+                              return;
+                            }
                             setPdfLoadingKey(groupKey);
                             const pdfApiUrl = `/api/dashboard/stores/${group.storeId}/delivery-note?date=${new Date(group.timestamp).toISOString().split('T')[0]}&brandId=${group.items[0]?.product.brandId}&dn=${group.deliveryNote}`;
                             router.push(`/pdf-preview?url=${encodeURIComponent(pdfApiUrl)}&title=${encodeURIComponent(group.deliveryNote)}`);

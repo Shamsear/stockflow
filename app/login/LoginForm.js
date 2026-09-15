@@ -236,6 +236,7 @@ export default function LoginForm() {
             {/* Primary Action Button */}
             <button
               type="submit"
+              data-tour="login-submit-btn"
               disabled={loading}
               className="w-full flex items-center justify-center gap-2 mt-1 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm transition-all shadow hover:shadow-md cursor-pointer group"
             >

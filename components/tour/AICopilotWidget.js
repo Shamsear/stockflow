@@ -7,17 +7,17 @@ import {
   ChevronRight, 
   ChevronLeft, 
   X, 
-  MessageSquare, 
   Send, 
   HelpCircle, 
   Minimize2, 
-  Maximize2,
-  Info,
-  Loader2,
-  User,
-  Building2,
-  MapPin,
-  ArrowRight
+  Maximize2, 
+  Info, 
+  Loader2, 
+  User, 
+  Building2, 
+  MapPin, 
+  ArrowRight,
+  MousePointerClick
 } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
@@ -104,7 +104,7 @@ export default function AICopilotWidget() {
 
   return (
     <div 
-      className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-[90] w-[calc(100vw-24px)] sm:w-[420px] max-w-[440px] transition-all duration-300 pointer-events-auto select-none"
+      className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-[95] w-[calc(100vw-24px)] sm:w-[420px] max-w-[440px] transition-all duration-300 pointer-events-auto select-none"
       role="region"
       aria-label="Interactive Tour Guide"
     >
@@ -121,7 +121,7 @@ export default function AICopilotWidget() {
                   Amin • StockFlow Guide
                 </span>
                 <span className="text-[11px] font-mono text-text-muted">
-                  {isOnboardingOpen ? 'START' : `${currentStep?.stepNumber || '01'} / 0${steps.length}`}
+                  {isOnboardingOpen ? 'START' : `STEP ${currentStep?.stepNumber || '01'} / ${steps.length < 10 ? '0' + steps.length : steps.length}`}
                 </span>
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function AICopilotWidget() {
                 Welcome to StockFlow WMS
               </h4>
               <p className="text-xs text-text-secondary mt-1.5 leading-relaxed">
-                I am <strong className="text-text-primary font-semibold">Amin</strong>, your warehouse implementation guide. To tailor this walkthrough and demonstrate how StockFlow fits your operations, what is your name, company name, and location?
+                I am <strong className="text-text-primary font-semibold">Amin</strong>, your warehouse implementation guide. StockFlow is 100% customizable for Qatar & UAE logistics operations: custom roles, unlimited users, and custom delivery slips. To tailor this walkthrough, what is your name, company name, and location?
               </p>
             </div>
 
@@ -353,6 +353,22 @@ export default function AICopilotWidget() {
               </h4>
             </div>
 
+            {/* Action Directive Box */}
+            {currentStep.actionRequired && (
+              <div className="p-3 rounded-xl border border-primary/30 bg-primary/[0.05] flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-primary text-[10px] font-mono uppercase tracking-wider font-bold">
+                  <MousePointerClick size={12} />
+                  <span>Action Required</span>
+                </div>
+                <div className="text-xs font-semibold text-text-primary">
+                  {currentStep.actionRequired}
+                </div>
+                <div className="text-[11px] text-text-secondary">
+                  {currentStep.actionInstruction}
+                </div>
+              </div>
+            )}
+
             {/* Plain-English Explanation */}
             <p className="text-xs sm:text-[13px] text-text-secondary leading-relaxed">
               {currentStep.explanation}
@@ -376,7 +392,7 @@ export default function AICopilotWidget() {
                 onClick={skipTour}
                 className="text-xs text-text-muted hover:text-text-primary transition-colors px-2 py-1"
               >
-                Skip
+                Skip Tour
               </button>
 
               <div className="flex items-center gap-2">
@@ -394,6 +410,7 @@ export default function AICopilotWidget() {
                   type="button"
                   onClick={nextStep}
                   className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-bold transition-colors shadow-sm"
+                  title="Advance to next step"
                 >
                   <span>{isLastStep ? 'Complete Walkthrough' : 'Next Step'}</span>
                   <ChevronRight size={13} />

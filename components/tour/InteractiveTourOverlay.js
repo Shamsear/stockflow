@@ -82,7 +82,7 @@ export default function InteractiveTourOverlay() {
       {/* Target Focus Ring */}
       {rect && rect.width > 0 && rect.height > 0 && (
         <div
-          className="fixed pointer-events-none z-[81] transition-all duration-300 rounded-lg border border-primary/80 ring-4 ring-primary/20 shadow-lg"
+          className="fixed pointer-events-none z-[81] transition-all duration-300 rounded-lg border-2 border-primary ring-4 ring-primary/30 shadow-lg animate-pulse"
           style={{
             top: `${rect.top}px`,
             left: `${rect.left}px`,
