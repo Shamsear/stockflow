@@ -87,7 +87,7 @@ export default function AICopilotWidget() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-text-primary">
-                  StockFlow Walkthrough
+                  Amin • StockFlow Guide
                 </span>
                 <span className="text-[11px] font-mono text-text-muted">
                   {currentStep.stepNumber} / 0{steps.length}
@@ -105,11 +105,11 @@ export default function AICopilotWidget() {
                   ? 'bg-primary text-white border-primary' 
                   : 'bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-elevated'
               }`}
-              title={isChatOpen ? 'Return to step details' : 'Ask questions about this step'}
+              title={isChatOpen ? 'Return to step details' : 'Ask Amin questions about this step'}
               aria-label="Toggle assistant questions"
             >
               <HelpCircle size={14} />
-              <span className="text-[11px] font-medium hidden sm:inline">Ask AI</span>
+              <span className="text-[11px] font-medium hidden sm:inline">Ask Amin</span>
             </button>
 
             <button
@@ -156,7 +156,7 @@ export default function AICopilotWidget() {
                   className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                 >
                   <div className="text-[10px] font-medium text-text-muted mb-1 px-1">
-                    {msg.role === 'user' ? 'You' : 'StockFlow Guide'}
+                    {msg.role === 'user' ? 'You' : 'Amin (StockFlow Guide)'}
                   </div>
                   <div
                     className={`p-3 rounded-xl max-w-[90%] leading-relaxed ${
@@ -202,7 +202,7 @@ export default function AICopilotWidget() {
                 type="text"
                 value={inputQuestion}
                 onChange={(e) => setInputQuestion(e.target.value)}
-                placeholder="Ask about this feature in plain English..."
+                placeholder="Ask Amin about this feature in plain English..."
                 className="flex-1 bg-surface-elevated/50 border border-border rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
                 disabled={isAsking}
               />

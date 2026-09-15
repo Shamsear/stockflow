@@ -79,7 +79,7 @@ export function TourProvider({ children }) {
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Welcome to StockFlow WMS. I am your guide. Feel free to ask any question about how this warehouse system works in plain words.'
+      content: 'Welcome to StockFlow WMS. I am Amin, your warehouse guide. Feel free to ask any question about how this warehouse system works in plain words.'
     }
   ]);
 

@@ -569,7 +569,7 @@ export default function AdminAnalyticsClient({ initialData }) {
                     className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
                   >
                     <div className="text-[10px] text-text-muted mb-1 px-1">
-                      {m.role === 'user' ? 'Visitor Question' : 'StockFlow Guide Answer'}
+                      {m.role === 'user' ? 'Visitor Question' : 'Amin (StockFlow Guide)'}
                     </div>
                     <div
                       className={`p-3 rounded-xl text-xs max-w-[90%] leading-relaxed ${
