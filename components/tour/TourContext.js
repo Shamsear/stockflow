@@ -75,6 +75,8 @@ export function TourProvider({ children }) {
   const [targetRect, setTargetRect] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [visitorProfile, setVisitorProfile] = useState({ name: '', company: '', location: '' });
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     {
       id: 'welcome',
@@ -85,8 +87,15 @@ export function TourProvider({ children }) {
 
   const currentStep = TOUR_STEPS[currentStepIndex] || null;
 
-  // 1. Initialize visitor session on mount
+  // 1. Initialize visitor session and saved profile on mount
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem('stockflow_visitor_profile');
+      if (saved) {
+        setVisitorProfile(JSON.parse(saved));
+      }
+    } catch {}
+
     fetch('/api/assistant/session', { method: 'POST' })
       .then(res => res.json())
       .then(data => {
@@ -99,7 +108,7 @@ export function TourProvider({ children }) {
 
   // 2. Measure target element bounding rect for spotlight
   const updateTargetRect = useCallback(() => {
-    if (!isTourActive || !currentStep) {
+    if (!isTourActive || isOnboardingOpen || !currentStep) {
       setTargetRect(null);
       return;
     }
@@ -122,7 +131,7 @@ export function TourProvider({ children }) {
     } else {
       setTargetRect(null);
     }
-  }, [isTourActive, currentStep]);
+  }, [isTourActive, isOnboardingOpen, currentStep]);
 
   useEffect(() => {
     updateTargetRect();
@@ -151,18 +160,80 @@ export function TourProvider({ children }) {
     }).catch(() => {});
   }, [sessionId]);
 
-  // 4. Navigation actions
+  // 4. Navigation actions & Onboarding
   const startTour = useCallback((startIndex = 0) => {
-    setCurrentStepIndex(startIndex);
     setIsTourActive(true);
     setIsMinimized(false);
     setIsCompletedModalOpen(false);
 
+    // If visitor has not provided their name yet, initiate onboarding first
+    if (!visitorProfile?.name) {
+      setIsOnboardingOpen(true);
+      return;
+    }
+
+    setIsOnboardingOpen(false);
+    setCurrentStepIndex(startIndex);
     const step = TOUR_STEPS[startIndex];
     if (step && pathname !== step.route.split('?')[0]) {
       router.push(step.route);
     }
     sendStepTelemetry(step.id, 'started');
+  }, [visitorProfile?.name, pathname, router, sendStepTelemetry]);
+
+  const saveVisitorProfile = useCallback(async (profile) => {
+    const updated = {
+      name: profile?.name?.trim() || '',
+      company: profile?.company?.trim() || '',
+      location: profile?.location?.trim() || ''
+    };
+    setVisitorProfile(updated);
+    try {
+      localStorage.setItem('stockflow_visitor_profile', JSON.stringify(updated));
+    } catch {}
+
+    setIsOnboardingOpen(false);
+
+    if (sessionId) {
+      fetch('/api/assistant/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          ...updated
+        })
+      }).catch(() => {});
+    }
+
+    const greeting = updated.name
+      ? `Welcome ${updated.name}${updated.company ? ` from ${updated.company}` : ''}${updated.location ? ` in ${updated.location}` : ''}! I am Amin, your warehouse implementation guide. I have prepared this walkthrough for your operations. Let's begin with inbound receiving.`
+      : `Welcome to StockFlow WMS. I am Amin, your warehouse guide. Let's begin with inbound receiving.`;
+
+    setChatMessages(prev => [
+      ...prev,
+      {
+        id: `welcome-${Date.now()}`,
+        role: 'assistant',
+        content: greeting
+      }
+    ]);
+
+    setCurrentStepIndex(0);
+    const step = TOUR_STEPS[0];
+    if (pathname !== step.route.split('?')[0]) {
+      router.push(step.route);
+    }
+    sendStepTelemetry(step.id, 'started', { profile: updated });
+  }, [sessionId, pathname, router, sendStepTelemetry]);
+
+  const skipOnboarding = useCallback(() => {
+    setIsOnboardingOpen(false);
+    setCurrentStepIndex(0);
+    const step = TOUR_STEPS[0];
+    if (pathname !== step.route.split('?')[0]) {
+      router.push(step.route);
+    }
+    sendStepTelemetry(step.id, 'started', { skippedOnboarding: true });
   }, [pathname, router, sendStepTelemetry]);
 
   const nextStep = useCallback(() => {
@@ -206,6 +277,7 @@ export function TourProvider({ children }) {
       sendStepTelemetry(currentStep.id, 'skipped');
     }
     setIsTourActive(false);
+    setIsOnboardingOpen(false);
     setTargetRect(null);
   }, [currentStep, sendStepTelemetry]);
 
@@ -219,7 +291,11 @@ export function TourProvider({ children }) {
       const res = await fetch('/api/assistant/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: questionText.trim(), sessionId })
+        body: JSON.stringify({
+          message: questionText.trim(),
+          sessionId,
+          visitorProfile
+        })
       });
       const data = await res.json();
       const assistantMsg = {
@@ -239,24 +315,34 @@ export function TourProvider({ children }) {
         }
       ]);
     }
-  }, [sessionId]);
+  }, [sessionId, visitorProfile]);
 
   // 6. Submit Satisfaction
   const submitSatisfaction = useCallback((rating, feedback = '', leadData = {}) => {
     sendStepTelemetry('satisfaction', 'completed', {
       rating,
       feedback,
-      leadData
+      leadData: {
+        ...leadData,
+        name: leadData.name || visitorProfile.name,
+        company: leadData.company || visitorProfile.company,
+        location: leadData.location || visitorProfile.location
+      }
     });
-  }, [sendStepTelemetry]);
+  }, [sendStepTelemetry, visitorProfile]);
 
   // 7. WhatsApp Click Telemetry
   const trackWhatsAppClick = useCallback((leadData = {}) => {
     sendStepTelemetry('whatsapp_lead', 'completed', {
       clickedWhatsApp: true,
-      leadData
+      leadData: {
+        ...leadData,
+        name: leadData.name || visitorProfile.name,
+        company: leadData.company || visitorProfile.company,
+        location: leadData.location || visitorProfile.location
+      }
     });
-  }, [sendStepTelemetry]);
+  }, [sendStepTelemetry, visitorProfile]);
 
   return (
     <TourContext.Provider
@@ -271,14 +357,20 @@ export function TourProvider({ children }) {
         targetRect,
         sessionId,
         completedSteps,
+        visitorProfile,
+        isOnboardingOpen,
         chatMessages,
         startTour,
+        saveVisitorProfile,
+        skipOnboarding,
         nextStep,
         prevStep,
         skipTour,
         setIsMinimized,
         setIsChatOpen,
         setIsCompletedModalOpen,
+        setIsOnboardingOpen,
+        setVisitorProfile,
         askQuestion,
         submitSatisfaction,
         trackWhatsAppClick

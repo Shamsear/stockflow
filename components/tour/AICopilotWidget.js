@@ -13,7 +13,11 @@ import {
   Minimize2, 
   Maximize2,
   Info,
-  Loader2
+  Loader2,
+  User,
+  Building2,
+  MapPin,
+  ArrowRight
 } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
@@ -32,6 +36,10 @@ export default function AICopilotWidget() {
     isMinimized,
     isChatOpen,
     chatMessages,
+    visitorProfile,
+    isOnboardingOpen,
+    saveVisitorProfile,
+    skipOnboarding,
     nextStep,
     prevStep,
     skipTour,
@@ -42,7 +50,17 @@ export default function AICopilotWidget() {
 
   const [inputQuestion, setInputQuestion] = useState('');
   const [isAsking, setIsAsking] = useState(false);
+  const [profileName, setProfileName] = useState(visitorProfile?.name || '');
+  const [profileCompany, setProfileCompany] = useState(visitorProfile?.company || '');
+  const [profileLocation, setProfileLocation] = useState(visitorProfile?.location || '');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const chatBottomRef = useRef(null);
+
+  useEffect(() => {
+    if (visitorProfile?.name) setProfileName(visitorProfile.name);
+    if (visitorProfile?.company) setProfileCompany(visitorProfile.company);
+    if (visitorProfile?.location) setProfileLocation(visitorProfile.location);
+  }, [visitorProfile]);
 
   useEffect(() => {
     if (isChatOpen && chatBottomRef.current) {
@@ -50,7 +68,8 @@ export default function AICopilotWidget() {
     }
   }, [chatMessages, isChatOpen]);
 
-  if (!isTourActive || !currentStep) return null;
+  if (!isTourActive) return null;
+  if (!isOnboardingOpen && !currentStep) return null;
 
   const handleSend = async (e) => {
     e?.preventDefault();
@@ -67,6 +86,18 @@ export default function AICopilotWidget() {
     setIsAsking(true);
     await askQuestion(question);
     setIsAsking(false);
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e?.preventDefault();
+    if (!profileName.trim()) return;
+    setIsSavingProfile(true);
+    await saveVisitorProfile({
+      name: profileName,
+      company: profileCompany,
+      location: profileLocation
+    });
+    setIsSavingProfile(false);
   };
 
   const isLastStep = currentStepIndex === steps.length - 1;
@@ -90,37 +121,41 @@ export default function AICopilotWidget() {
                   Amin • StockFlow Guide
                 </span>
                 <span className="text-[11px] font-mono text-text-muted">
-                  {currentStep.stepNumber} / 0{steps.length}
+                  {isOnboardingOpen ? 'START' : `${currentStep?.stepNumber || '01'} / 0${steps.length}`}
                 </span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className={`p-1.5 rounded-lg border text-xs transition-colors flex items-center gap-1 ${
-                isChatOpen 
-                  ? 'bg-primary text-white border-primary' 
-                  : 'bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-elevated'
-              }`}
-              title={isChatOpen ? 'Return to step details' : 'Ask Amin questions about this step'}
-              aria-label="Toggle assistant questions"
-            >
-              <HelpCircle size={14} />
-              <span className="text-[11px] font-medium hidden sm:inline">Ask Amin</span>
-            </button>
+            {!isOnboardingOpen && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsChatOpen(!isChatOpen)}
+                  className={`p-1.5 rounded-lg border text-xs transition-colors flex items-center gap-1 ${
+                    isChatOpen 
+                      ? 'bg-primary text-white border-primary' 
+                      : 'bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-elevated'
+                  }`}
+                  title={isChatOpen ? 'Return to step details' : 'Ask Amin questions about this step'}
+                  aria-label="Toggle assistant questions"
+                >
+                  <HelpCircle size={14} />
+                  <span className="text-[11px] font-medium hidden sm:inline">Ask Amin</span>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => setIsMinimized(!isMinimized)}
-              className="p-1.5 rounded-lg border border-border bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
-              title={isMinimized ? 'Expand tour card' : 'Minimize tour card'}
-              aria-label="Minimize"
-            >
-              {isMinimized ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
-            </button>
+                <button
+                  type="button"
+                  onClick={() => setIsMinimized(!isMinimized)}
+                  className="p-1.5 rounded-lg border border-border bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
+                  title={isMinimized ? 'Expand tour card' : 'Minimize tour card'}
+                  aria-label="Minimize"
+                >
+                  {isMinimized ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
+                </button>
+              </>
+            )}
 
             <button
               type="button"
@@ -134,8 +169,100 @@ export default function AICopilotWidget() {
           </div>
         </div>
 
-        {/* Minimized Peek View */}
-        {isMinimized ? (
+        {isOnboardingOpen ? (
+          /* Onboarding Form */
+          <div className="p-4 sm:p-5 flex flex-col gap-4 bg-surface select-text">
+            <div>
+              <h4 className="text-sm font-display font-bold text-text-primary leading-snug">
+                Welcome to StockFlow WMS
+              </h4>
+              <p className="text-xs text-text-secondary mt-1.5 leading-relaxed">
+                I am <strong className="text-text-primary font-semibold">Amin</strong>, your warehouse implementation guide. To tailor this walkthrough and demonstrate how StockFlow fits your operations, what is your name, company name, and location?
+              </p>
+            </div>
+
+            <form onSubmit={handleProfileSubmit} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider font-mono">
+                  Your Name
+                </label>
+                <div className="relative flex items-center">
+                  <User size={14} className="absolute left-3 text-text-muted pointer-events-none" />
+                  <input
+                    type="text"
+                    required
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder="e.g. Khalid Al-Mansoor"
+                    className="w-full bg-surface-elevated/50 border border-border rounded-lg pl-9 pr-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider font-mono">
+                  Company / Warehouse
+                </label>
+                <div className="relative flex items-center">
+                  <Building2 size={14} className="absolute left-3 text-text-muted pointer-events-none" />
+                  <input
+                    type="text"
+                    value={profileCompany}
+                    onChange={(e) => setProfileCompany(e.target.value)}
+                    placeholder="e.g. Al Meera Logistics"
+                    className="w-full bg-surface-elevated/50 border border-border rounded-lg pl-9 pr-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider font-mono">
+                  Location (City, Country)
+                </label>
+                <div className="relative flex items-center">
+                  <MapPin size={14} className="absolute left-3 text-text-muted pointer-events-none" />
+                  <input
+                    type="text"
+                    value={profileLocation}
+                    onChange={(e) => setProfileLocation(e.target.value)}
+                    placeholder="e.g. Doha, Qatar or Dubai, UAE"
+                    className="w-full bg-surface-elevated/50 border border-border rounded-lg pl-9 pr-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col gap-2">
+                <button
+                  type="submit"
+                  disabled={isSavingProfile || !profileName.trim()}
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50"
+                >
+                  {isSavingProfile ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Personalizing Walkthrough...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Start Walkthrough with Amin</span>
+                      <ArrowRight size={13} />
+                    </>
+                  )}
+                </button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={skipOnboarding}
+                    className="text-[11px] text-text-muted hover:text-text-primary transition-colors underline-offset-2 hover:underline"
+                  >
+                    Skip and explore as guest
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        ) : isMinimized ? (
           <div className="px-4 py-2.5 flex items-center justify-between text-xs bg-surface cursor-pointer" onClick={() => setIsMinimized(false)}>
             <div className="flex items-center gap-2 truncate pr-2">
               <span className="font-mono text-[11px] text-text-muted">{currentStep.stepNumber}.</span>

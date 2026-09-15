@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTour } from './TourContext';
 import { CheckCircle2, Star, MessageSquare, X, Send, ArrowRight } from 'lucide-react';
 
@@ -9,35 +9,54 @@ export default function TourEndModal() {
     isCompletedModalOpen, 
     setIsCompletedModalOpen, 
     submitSatisfaction, 
-    trackWhatsAppClick 
+    trackWhatsAppClick,
+    visitorProfile
   } = useTour();
 
   const [rating, setRating] = useState(5);
   const [feedback, setFeedback] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [visitorName, setVisitorName] = useState('');
-  const [visitorCompany, setVisitorCompany] = useState('');
+  const [visitorName, setVisitorName] = useState(visitorProfile?.name || '');
+  const [visitorCompany, setVisitorCompany] = useState(visitorProfile?.company || '');
+
+  useEffect(() => {
+    if (visitorProfile?.name) setVisitorName(visitorProfile.name);
+    if (visitorProfile?.company) setVisitorCompany(visitorProfile.company);
+  }, [visitorProfile]);
 
   if (!isCompletedModalOpen) return null;
 
   const handleSubmitRating = (e) => {
     e?.preventDefault();
     submitSatisfaction(rating, feedback, {
-      name: visitorName,
-      company: visitorCompany
+      name: visitorName || visitorProfile?.name,
+      company: visitorCompany || visitorProfile?.company,
+      location: visitorProfile?.location
     });
     setIsSubmitted(true);
   };
 
   const handleWhatsApp = () => {
+    const finalName = visitorName || visitorProfile?.name || '';
+    const finalCompany = visitorCompany || visitorProfile?.company || '';
+    const finalLocation = visitorProfile?.location || '';
+
     trackWhatsAppClick({
-      name: visitorName,
-      company: visitorCompany,
+      name: finalName,
+      company: finalCompany,
+      location: finalLocation,
       rating,
       feedback
     });
+
+    const leadIntro = finalName
+      ? `My name is ${finalName}${finalCompany ? ` from ${finalCompany}` : ''}${finalLocation ? ` in ${finalLocation}` : ''}.`
+      : finalCompany
+      ? `I represent ${finalCompany}${finalLocation ? ` in ${finalLocation}` : ''}.`
+      : 'I';
+
     const message = encodeURIComponent(
-      `Hi StockFlow! I just completed the interactive walkthrough of your warehouse management system. I am interested in tailoring this for ${visitorCompany ? visitorCompany : 'our warehouse operations'}.`
+      `Hi StockFlow! ${leadIntro} I just completed the interactive walkthrough of your warehouse management system. I would like to discuss tailoring StockFlow for our operations.`
     );
     window.open(`https://wa.me/97472360418?text=${message}`, '_blank', 'noopener,noreferrer');
   };

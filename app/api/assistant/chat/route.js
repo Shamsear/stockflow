@@ -70,7 +70,7 @@ const KNOWLEDGE_BASE = [
   }
 ];
 
-function findFallbackAnswer(question = '') {
+function findFallbackAnswer(question = '', visitorProfile = null) {
   const q = question.toLowerCase();
 
   for (const item of KNOWLEDGE_BASE) {
@@ -82,18 +82,31 @@ function findFallbackAnswer(question = '') {
     }
   }
 
+  const nameGreeting = visitorProfile?.name ? `${visitorProfile.name}, ` : '';
   return {
-    reply: "StockFlow WMS helps warehouse operations across Qatar and the UAE track inventory from dock receiving to retail dispatch, with automated FEFO shelf-life control and official PDF delivery notes. Would you like to know more about receiving, barcode scanning, delivery notes, or custom warehouse setup?",
+    reply: `${nameGreeting}StockFlow WMS helps warehouse operations across Qatar and the UAE track inventory from dock receiving to retail dispatch, with automated FEFO shelf-life control and official PDF delivery notes. Would you like to know more about receiving, barcode scanning, delivery notes, or custom warehouse setup?`,
     suggestions: ["How does FEFO work?", "How do delivery notes work?", "Talk on WhatsApp"]
   };
 }
 
-async function queryGemini(userQuestion) {
+async function queryGemini(userQuestion, visitorProfile = null) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
 
+  let visitorContext = '';
+  if (visitorProfile?.name || visitorProfile?.company || visitorProfile?.location) {
+    const parts = [];
+    if (visitorProfile.name) parts.push(`Name: "${visitorProfile.name}"`);
+    if (visitorProfile.company) parts.push(`Company/Warehouse: "${visitorProfile.company}"`);
+    if (visitorProfile.location) parts.push(`Location: "${visitorProfile.location}"`);
+    visitorContext = `\nVISITOR PROFILE:
+You are speaking with ${parts.join(', ')}.
+Address the visitor respectfully by name when natural, and relate warehouse answers to their business and regional operations (e.g. Qatar or UAE) where relevant.`;
+  }
+
   const systemInstruction = `You are Amin, the dedicated warehouse guide for StockFlow WMS.
 StockFlow is used by FMCG, food & beverage, and wholesale distributors in Qatar (Doha, Industrial Area) and the UAE (Dubai, Sharjah, Abu Dhabi).
+${visitorContext}
 
 STRICT SCOPE & SECURITY BOUNDARIES:
 - You are ONLY permitted to assist with StockFlow warehouse features, inventory tracking, dock receiving, FEFO expiry control, store dispatch, delivery note PDFs, and barcode scanning.
@@ -145,7 +158,7 @@ STRICT SCOPE & SECURITY BOUNDARIES:
 
 export async function POST(request) {
   try {
-    const { message, sessionId } = await request.json();
+    const { message, sessionId, visitorProfile } = await request.json();
 
     if (!message || !message.trim()) {
       return NextResponse.json({ error: 'Message cannot be empty' }, { status: 400 });
@@ -216,12 +229,12 @@ export async function POST(request) {
     }
 
     // 5. Query Gemini with strict system boundaries
-    let reply = await queryGemini(trimmedMsg);
+    let reply = await queryGemini(trimmedMsg, visitorProfile);
     let suggestions = [];
 
     // 6. Fallback to curated knowledge base if offline or Gemini fails
     if (!reply) {
-      const fallback = findFallbackAnswer(trimmedMsg);
+      const fallback = findFallbackAnswer(trimmedMsg, visitorProfile);
       reply = fallback.reply;
       suggestions = fallback.suggestions;
     } else {
