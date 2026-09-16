@@ -204,6 +204,246 @@ const TOUR_STEPS = [
     actionRequired: 'Click [Export to Excel]',
     actionInstruction: 'Click the Export button highlighted above to download the live multi-brand stock ledger.',
     explanation: 'Exporting formatted Excel spreadsheets completes your live tour walkthrough.',
+    nextRoute: '/dashboard/products',
+    nextStepTitle: 'Inventory Catalog'
+  },
+  {
+    id: 'products',
+    route: '/dashboard/products',
+    targetSelector: '[data-tour="products-header"]',
+    stepNumber: '11',
+    title: 'Inventory Catalog',
+    pageOverviewTitle: 'Product & SKU Catalog Management',
+    pageOverview: 'Define and manage every product in your warehouse catalog. Supports bulk ambient goods, temperature-sensitive FMCG lines, serialized accessories (SIM cards, display stands), and uniforms.',
+    pageFeatures: [
+      'Barcode and SKU registration with brand association',
+      'Mark items as returnable, disposable, or serialized',
+      'Set stock caps and filter by brand or product type'
+    ],
+    actionTitle: 'View Brands Portfolio',
+    actionRequired: 'Click [Brands] in sidebar',
+    actionInstruction: 'Click Brands highlighted in the sidebar to view the brand management screen.',
+    explanation: 'See how each brand owner\'s catalog is organized and managed.',
+    nextRoute: '/dashboard/brands',
+    nextStepTitle: 'Brands Portfolio'
+  },
+  {
+    id: 'brands',
+    route: '/dashboard/brands',
+    targetSelector: '[data-tour="brands-header"]',
+    stepNumber: '12',
+    title: 'Brands Portfolio',
+    pageOverviewTitle: 'Client Brand Portfolio Management',
+    pageOverview: 'Register and manage brand owners whose products are stored and distributed from your warehouse. Each brand has its own logo, product catalog, and associated retail outlets.',
+    pageFeatures: [
+      'Brand logo upload and catalog organization',
+      'Link products to specific brand owners',
+      'Per-brand product count and outlet assignment'
+    ],
+    actionTitle: 'View Retail Outlets',
+    actionRequired: 'Click [Stores] in sidebar',
+    actionInstruction: 'Click Stores in the sidebar to view registered retail outlets and hypermarket branches.',
+    explanation: 'Each store represents a physical retail location where stock is dispatched.',
+    nextRoute: '/dashboard/stores',
+    nextStepTitle: 'Outlets & Stores'
+  },
+  {
+    id: 'stores',
+    route: '/dashboard/stores',
+    targetSelector: '[data-tour="stores-header"]',
+    stepNumber: '13',
+    title: 'Outlets & Stores Registry',
+    pageOverviewTitle: 'Retail Outlets & Hypermarket Branches',
+    pageOverview: 'Register every physical retail outlet, hypermarket branch, or distribution point your fleet delivers to. Includes region, coordinates, and GPS links for drivers.',
+    pageFeatures: [
+      'Register Carrefour, Lulu, Al Meera branches by region',
+      'GPS coordinates for driver routing and fleet tracking',
+      'Batch register multiple store outlets at once'
+    ],
+    actionTitle: 'View Supervisors',
+    actionRequired: 'Click [Supervisors] in sidebar',
+    actionInstruction: 'Click Supervisors in the sidebar to view regional field supervisors.',
+    explanation: 'Supervisors authorize dispatches and sign delivery notes.',
+    nextRoute: '/dashboard/supervisors',
+    nextStepTitle: 'Supervisors'
+  },
+  {
+    id: 'supervisors',
+    route: '/dashboard/supervisors',
+    targetSelector: '[data-tour="supervisors-header"]',
+    stepNumber: '14',
+    title: 'Supervisors & Authorizers',
+    pageOverviewTitle: 'Field Supervisors & Dispatch Authorizers',
+    pageOverview: 'Register regional supervisors who authorize stock dispatches, sign delivery notes, and oversee promoters in the field. Supervisor signatures appear on official delivery note PDFs.',
+    pageFeatures: [
+      'Supervisor signature linked to official delivery note PDFs',
+      'Assign supervisors to dispatch and return operations',
+      'Regional coverage tracking for field oversight'
+    ],
+    actionTitle: 'View Staff & Promoters',
+    actionRequired: 'Click [Staff & Promoters] in sidebar',
+    actionInstruction: 'Click Staff & Promoters in the sidebar to manage uniform and promotional material assignments.',
+    explanation: 'Manage uniform allocations and track promoter placements at retail stores.',
+    nextRoute: '/dashboard/staff',
+    nextStepTitle: 'Staff & Promoters'
+  },
+  {
+    id: 'staff',
+    route: '/dashboard/staff',
+    targetSelector: '[data-tour="staff-header"]',
+    stepNumber: '15',
+    title: 'Staff & Promoter Tracking',
+    pageOverviewTitle: 'Uniform Allocation & Promoter Management',
+    pageOverview: 'Track promotional staff assigned to hypermarket floors. Issue uniforms and branded caps, record working periods at each outlet, and manage returns when contracts end.',
+    pageFeatures: [
+      'Issue uniforms and branded caps to field promoters',
+      'Record outlet placements with start and end dates',
+      'Track and process uniform returns per promoter'
+    ],
+    actionTitle: 'View Store Returns',
+    actionRequired: 'Click [Returns] in sidebar',
+    actionInstruction: 'Click Returns in the sidebar to manage stock returned from stores.',
+    explanation: 'Process goods returned from retail outlets back into warehouse stock.',
+    nextRoute: '/dashboard/returns',
+    nextStepTitle: 'Store Returns'
+  },
+  {
+    id: 'returns',
+    route: '/dashboard/returns',
+    targetSelector: '[data-tour="returns-header"]',
+    stepNumber: '16',
+    title: 'Store Returns Hub',
+    pageOverviewTitle: 'Stock Returns from Retail Outlets',
+    pageOverview: 'Process returnable stock that comes back from hypermarket branches or promoter deployments. Items are inspected, restocked, or flagged for quarantine based on condition.',
+    pageFeatures: [
+      'Return whole or partial delivery note quantities',
+      'Undo accidental returns with the Returns History tab',
+      'Only returnable product types appear in this module'
+    ],
+    actionTitle: 'View Mark as Used',
+    actionRequired: 'Click [Mark as Used] in sidebar',
+    actionInstruction: 'Click Mark as Used in the sidebar to consume disposable stock.',
+    explanation: 'Disposable items like testers and samples are consumed rather than returned.',
+    nextRoute: '/dashboard/used',
+    nextStepTitle: 'Mark as Used'
+  },
+  {
+    id: 'used',
+    route: '/dashboard/used',
+    targetSelector: '[data-tour="used-header"]',
+    stepNumber: '17',
+    title: 'Mark as Used / Consumed',
+    pageOverviewTitle: 'Consumable & Disposable Stock Consumption',
+    pageOverview: 'Permanently retire disposable stock items such as testers, samples, display units, and promotional materials that are fully consumed in the field and not returned to warehouse.',
+    pageFeatures: [
+      'Mark testers, samples, and display items as consumed',
+      'Group consumption by delivery note for audit trail',
+      'Undo accidental consumption via history tab'
+    ],
+    actionTitle: 'Report Damage',
+    actionRequired: 'Click [Report Damage] in sidebar',
+    actionInstruction: 'Click Report Damage in the sidebar to log damaged or wasted items.',
+    explanation: 'Damaged and unsellable stock must be quarantined and documented.',
+    nextRoute: '/dashboard/damage',
+    nextStepTitle: 'Report Damage'
+  },
+  {
+    id: 'damage',
+    route: '/dashboard/damage',
+    targetSelector: '[data-tour="damage-header"]',
+    stepNumber: '18',
+    title: 'Report Damage & Wastage',
+    pageOverviewTitle: 'Damage Reporting & Quarantine',
+    pageOverview: 'Log products damaged in transit, storage, or during promotional use. Damaged items are removed from active stock, quarantined, and documented with notes for insurance and audit purposes.',
+    pageFeatures: [
+      'Scan barcode or select serial number to report damage',
+      'Items auto-removed from active picker inventory',
+      'Full damage audit trail with notes and timestamps'
+    ],
+    actionTitle: 'Report Loss',
+    actionRequired: 'Click [Report Loss] in sidebar',
+    actionInstruction: 'Click Report Loss in the sidebar to log missing or stolen stock.',
+    explanation: 'Missing or stolen stock must be formally recorded and removed from inventory.',
+    nextRoute: '/dashboard/loss',
+    nextStepTitle: 'Report Loss'
+  },
+  {
+    id: 'loss',
+    route: '/dashboard/loss',
+    targetSelector: '[data-tour="loss-header"]',
+    stepNumber: '19',
+    title: 'Loss & Missing Stock Ledger',
+    pageOverviewTitle: 'Loss Reporting & Missing Stock',
+    pageOverview: 'Formally document stock that is missing, stolen, or cannot be accounted for during physical inventory checks. Loss records create a permanent audit trail for management review.',
+    pageFeatures: [
+      'Report warehouse, store, or transit losses by location',
+      'Permanent loss record for insurance and management review',
+      'Filter and export loss reports by brand or date'
+    ],
+    actionTitle: 'Rebrand Stock',
+    actionRequired: 'Click [Rebrand Stock] in sidebar',
+    actionInstruction: 'Click Rebrand Stock in the sidebar to reassign items to a different brand.',
+    explanation: 'Transfer stock between brand catalogs when product ownership changes.',
+    nextRoute: '/dashboard/rebrand',
+    nextStepTitle: 'Rebrand Stock'
+  },
+  {
+    id: 'rebrand',
+    route: '/dashboard/rebrand',
+    targetSelector: '[data-tour="rebrand-header"]',
+    stepNumber: '20',
+    title: 'Rebrand Stock Items',
+    pageOverviewTitle: 'Cross-Brand Stock Reallocation',
+    pageOverview: 'Reassign existing warehouse stock from one brand catalog to another. Used when promotional items or shared product lines are transferred between brand owner accounts.',
+    pageFeatures: [
+      'Scan or select barcodes to reassign brand ownership',
+      'Full rebrand audit trail with before/after record',
+      'Supports barcode scanner for bulk rebranding sessions'
+    ],
+    actionTitle: 'View Ledger Logs',
+    actionRequired: 'Click [Ledger Logs] in sidebar',
+    actionInstruction: 'Click Ledger Logs in the sidebar to view the complete transaction audit trail.',
+    explanation: 'Every warehouse movement is recorded in the immutable ledger log.',
+    nextRoute: '/dashboard/transactions',
+    nextStepTitle: 'Ledger Logs'
+  },
+  {
+    id: 'transactions',
+    route: '/dashboard/transactions',
+    targetSelector: '[data-tour="transactions-header"]',
+    stepNumber: '21',
+    title: 'Inventory Ledger Feed',
+    pageOverviewTitle: 'Full Inventory Ledger & Audit Trail',
+    pageOverview: 'Every warehouse movement — inbound receipts, outbound dispatches, returns, rebrands, damages, and losses — is permanently recorded in the immutable inventory ledger feed.',
+    pageFeatures: [
+      'Complete immutable audit trail of every stock movement',
+      'Filter by transaction type, brand, date range, or product',
+      'Export formatted Excel audit reports for compliance'
+    ],
+    actionTitle: 'View System Settings',
+    actionRequired: 'Click [Settings] in sidebar',
+    actionInstruction: 'Click Settings in the sidebar to view system configuration.',
+    explanation: 'Review and configure your StockFlow WMS system settings.',
+    nextRoute: '/dashboard/settings',
+    nextStepTitle: 'System Settings'
+  },
+  {
+    id: 'settings',
+    route: '/dashboard/settings',
+    targetSelector: '[data-tour="settings-header"]',
+    stepNumber: '22',
+    title: 'System Settings & Configuration',
+    pageOverviewTitle: 'System Control & WMS Configuration',
+    pageOverview: 'Configure your StockFlow WMS: company details, CR and Tax ID for delivery note headers, cloud integrations, image storage, push notification subscriptions, and cache management.',
+    pageFeatures: [
+      'Set company CR number and Tax ID for official PDF headers',
+      'Configure ImageKit cloud storage for product photos',
+      'Manage push notifications and clear system caches'
+    ],
+    actionTitle: 'Tour Complete',
+    actionRequired: null,
+    actionInstruction: null,
+    explanation: 'You have now seen every module of StockFlow WMS. Contact us to tailor this system for your warehouse.',
     nextRoute: null,
     nextStepTitle: null
   }

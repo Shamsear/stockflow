@@ -94,6 +94,7 @@ export default function UsedClient({ transactions, stores, pastUsed = [] }) {
 
   return (
     <div className="flex flex-col gap-6 relative">
+      <div data-tour="used-header">
       <PageHeader
         icon={Trash2}
         title="Mark as Used / Consumed"
@@ -129,6 +130,7 @@ export default function UsedClient({ transactions, stores, pastUsed = [] }) {
         </>
       }
       />
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-1 bg-surface-elevated/30 border border-border rounded-xl p-1 w-fit">
